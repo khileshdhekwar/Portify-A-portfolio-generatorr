@@ -15,3 +15,4 @@ export default function Spinner({ size = 'md', className = '', label = 'Loading.
     </div>
   );
 }
+

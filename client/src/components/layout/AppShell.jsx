@@ -16,3 +16,4 @@ export default function AppShell({ children, showFooter = true, fullWidth = fals
     </div>
   );
 }
+
