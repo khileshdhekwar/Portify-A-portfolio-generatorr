@@ -172,3 +172,4 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
     </div>
   );
 }
+

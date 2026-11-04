@@ -35,3 +35,4 @@ export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, portfol
     </Modal>
   );
 }
+

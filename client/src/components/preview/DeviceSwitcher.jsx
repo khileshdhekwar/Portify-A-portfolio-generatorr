@@ -69,3 +69,4 @@ export default function DeviceSwitcher({ device, setDevice, onRefresh, publicUrl
     </div>
   );
 }
+

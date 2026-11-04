@@ -38,3 +38,4 @@ export default function ThemeRenderer({ portfolio, qrCodeUrl }) {
       return <MinimalProTheme portfolio={portfolio} qrCodeUrl={qrCodeUrl} />;
   }
 }
+

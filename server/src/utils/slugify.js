@@ -39,3 +39,4 @@ const generateUniqueSlug = async (baseName, excludeId = null) => {
 };
 
 module.exports = { toSlug, generateUniqueSlug };
+

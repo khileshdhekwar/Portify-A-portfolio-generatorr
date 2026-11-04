@@ -15,3 +15,4 @@ router.post('/enhance-summary', handleEnhanceSummary);
 router.post('/enhance-highlights', handleEnhanceHighlights);
 
 module.exports = router;
+

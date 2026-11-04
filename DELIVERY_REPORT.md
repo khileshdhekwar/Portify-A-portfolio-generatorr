@@ -45,3 +45,4 @@ Portify AI is a production-quality, full-stack MERN application that converts up
 | **Production Build** | Vite Bundler | 1669 modules | ✅ **Clean Build** | Tree-shaken production bundles (JS + CSS) in 6.76s |
 | **End-to-End User Journey** | Playwright (Chromium) | 1 Full Flow | ✅ **Passed (6.1s)** | Landing → 1-Click Demo Auth → Dashboard → Upload Sample Resume → Studio Live Preview → Viewport Switcher → Theme Switcher → Save Changes → Public Portfolio View |
 | **End-to-End Asset Verification** | Node.js + JSZip | 6 Stages | ✅ **Passed** | Registration, Portfolio creation, Studio updates, Public slug resolution, QR Base64, and verification of files inside exported ZIP (`index.html`, `qrcode.png`, `portfolio.json`, `README.md`) |
+

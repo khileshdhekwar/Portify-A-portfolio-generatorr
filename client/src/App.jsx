@@ -1,7 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/common/Navbar';
-import Footer from './components/common/Footer';
+import AppShell from './components/layout/AppShell';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Pages
@@ -16,107 +15,84 @@ import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Routes>
-        {/* Public Landing & Marketing */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Navbar />
-              <main className="flex-1">
-                <HomePage />
-              </main>
-              <Footer />
-            </>
-          }
-        />
+    <Routes>
+      {/* Public Landing & Marketing */}
+      <Route
+        path="/"
+        element={
+          <AppShell>
+            <HomePage />
+          </AppShell>
+        }
+      />
 
-        {/* Auth Pages */}
-        <Route
-          path="/login"
-          element={
-            <>
-              <Navbar />
-              <main className="flex-1">
-                <LoginPage />
-              </main>
-              <Footer />
-            </>
-          }
-        />
+      {/* Auth Pages */}
+      <Route
+        path="/login"
+        element={
+          <AppShell>
+            <LoginPage />
+          </AppShell>
+        }
+      />
 
-        <Route
-          path="/register"
-          element={
-            <>
-              <Navbar />
-              <main className="flex-1">
-                <RegisterPage />
-              </main>
-              <Footer />
-            </>
-          }
-        />
+      <Route
+        path="/register"
+        element={
+          <AppShell>
+            <RegisterPage />
+          </AppShell>
+        }
+      />
 
-        {/* Protected Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Navbar />
-              <main className="flex-1">
-                <DashboardPage />
-              </main>
-              <Footer />
-            </ProtectedRoute>
-          }
-        />
+      {/* Protected Dashboard */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <DashboardPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Protected Upload Resume */}
-        <Route
-          path="/upload"
-          element={
-            <ProtectedRoute>
-              <Navbar />
-              <main className="flex-1">
-                <UploadPage />
-              </main>
-              <Footer />
-            </ProtectedRoute>
-          }
-        />
+      {/* Protected Upload Resume */}
+      <Route
+        path="/upload"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <UploadPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Protected Split-Screen Editor Studio */}
-        <Route
-          path="/editor/:id"
-          element={
-            <ProtectedRoute>
-              <Navbar />
-              <main className="flex-1">
-                <EditorPage />
-              </main>
-            </ProtectedRoute>
-          }
-        />
+      {/* Protected Split-Screen Editor Studio (Full Height Shell without extra footer) */}
+      <Route
+        path="/editor/:id"
+        element={
+          <ProtectedRoute>
+            <AppShell showFooter={false} fullWidth>
+              <EditorPage />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Public Portfolio View (Unique Slug) */}
-        <Route path="/p/:slug" element={<PublicPortfolioPage />} />
+      {/* Public Portfolio View (Unique Slug) */}
+      <Route path="/p/:slug" element={<PublicPortfolioPage />} />
 
-        {/* 404 Catch-All */}
-        <Route
-          path="*"
-          element={
-            <>
-              <Navbar />
-              <main className="flex-1">
-                <NotFoundPage />
-              </main>
-              <Footer />
-            </>
-          }
-        />
-      </Routes>
-    </div>
+      {/* 404 Catch-All */}
+      <Route
+        path="*"
+        element={
+          <AppShell>
+            <NotFoundPage />
+          </AppShell>
+        }
+      />
+    </Routes>
   );
 }

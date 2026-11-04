@@ -45,3 +45,4 @@ const generateQRBuffer = async (url) => {
 };
 
 module.exports = { generateQRDataUrl, generateQRBuffer };
+

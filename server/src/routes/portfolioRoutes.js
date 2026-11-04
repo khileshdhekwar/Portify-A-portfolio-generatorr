@@ -24,3 +24,4 @@ router.get('/:id/zip', downloadPortfolioZip);
 router.get('/:id/qr', getPortfolioQR);
 
 module.exports = router;
+

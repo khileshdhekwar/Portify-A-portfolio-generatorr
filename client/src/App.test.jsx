@@ -6,6 +6,7 @@ import ThemeRenderer, { THEMES } from './components/themes/ThemeRenderer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 
 const mockPortfolio = {
   theme: 'minimal-pro',
@@ -64,25 +65,30 @@ describe('Portify AI Client Theme Suite', () => {
     render(
       <BrowserRouter>
         <AuthProvider>
-          <HomePage />
+          <ToastProvider>
+            <HomePage />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/Your Resume, Your Identity,/i)).toBeInTheDocument();
-    expect(screen.getByText(/Upload Resume & Generate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your Resume, Your Identity,/i)).toBeVisible();
+    expect(screen.getByText(/Upload Resume & Generate/i)).toBeVisible();
   });
 
   it('should render the LoginPage with 1-click demo button', () => {
     render(
       <BrowserRouter>
         <AuthProvider>
-          <LoginPage />
+          <ToastProvider>
+            <LoginPage />
+          </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/Sign in to Portify AI/i)).toBeInTheDocument();
-    expect(screen.getByText(/1-Click Demo Sign In/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign in to Portify AI/i)).toBeVisible();
+    expect(screen.getByText(/1-Click Demo Sign In/i)).toBeVisible();
   });
 });
+

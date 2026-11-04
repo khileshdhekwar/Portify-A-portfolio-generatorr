@@ -84,3 +84,4 @@ export default function QRCodeModal({ isOpen, onClose, portfolio }) {
     </Modal>
   );
 }
+

@@ -19,3 +19,4 @@ const extractTextFromDOCX = async (buffer) => {
 };
 
 module.exports = { extractTextFromDOCX };
+

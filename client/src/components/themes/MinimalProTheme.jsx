@@ -245,3 +245,4 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
     </div>
   );
 }
+

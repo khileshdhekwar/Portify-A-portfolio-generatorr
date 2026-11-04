@@ -8,3 +8,4 @@ router.post('/upload', protect, uploadResume.single('resume'), uploadAndParseRes
 router.post('/preview-extract', protect, uploadResume.single('resume'), previewResumeExtract);
 
 module.exports = router;
+

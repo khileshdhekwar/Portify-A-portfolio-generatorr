@@ -20,3 +20,4 @@ const extractTextFromPDF = async (buffer) => {
 };
 
 module.exports = { extractTextFromPDF };
+

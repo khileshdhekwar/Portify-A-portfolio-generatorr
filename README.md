@@ -184,3 +184,4 @@ Portify/
 - **Safe Public Exposure**: Public routes (`/p/:slug`) expose only intentionally published portfolios.
 - **Sanitized Uploads**: In-memory buffer processing for PDF/DOCX with file size limits (10MB) and MIME validation.
 - **Security Headers & Protection**: Helmet security headers and IP rate limiting on API routes.
+

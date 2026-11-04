@@ -37,3 +37,4 @@ CloudScale Monitoring Dashboard
 https://cloudscale-demo.app | https://github.com/alexvance/cloudscale
 - Real-time cloud metrics visualizer built with Next.js, WebSockets, and Tailwind CSS.
 - Handled over 10,000 simulated telemetry events per second with zero frame drops.
+
