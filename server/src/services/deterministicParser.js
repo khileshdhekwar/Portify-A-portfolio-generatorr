@@ -3,6 +3,9 @@
  * Extracts structured portfolio data directly from resume text without hallucinations.
  */
 
+const { validateResumeData } = require('../validators/resumeSchema');
+const { extractEvidenceBasedProjects } = require('./projectExtractionService');
+
 // Regex patterns
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const PHONE_REGEX = /(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?|(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/;
@@ -37,14 +40,28 @@ const SKILL_TAXONOMY = {
   ]
 };
 
+const SOFT_SKILLS_TAXONOMY = [
+  'Leadership', 'Team Management', 'Mentoring', 'Communication', 'Problem Solving',
+  'Strategic Planning', 'Agile / Scrum', 'Collaboration', 'Critical Thinking',
+  'Adaptability', 'Time Management', 'Conflict Resolution', 'Decision Making',
+  'Emotional Intelligence', 'Stakeholder Management', 'Public Speaking'
+];
+
 // Section headers detector regex
 const SECTION_HEADERS = {
   summary: /^(?:summary|professional summary|executive summary|about me|profile|objective|career objective)$/i,
   experience: /^(?:work experience|experience|professional experience|employment history|work history)$/i,
   education: /^(?:education|academic background|academics|educational qualifications)$/i,
-  skills: /^(?:skills|technical skills|skills & expertise|core competencies|technologies|tools)$/i,
-  projects: /^(?:projects|personal projects|key projects|featured projects|technical projects)$/i,
-  certifications: /^(?:certifications|certificates|licenses & certifications|achievements)$/i,
+  skills: /^(?:skills|technical skills|skills & expertise|technologies|tools)$/i,
+  softSkills: /^(?:soft skills|interpersonal skills|core competencies|leadership & soft skills)$/i,
+  projects: /^(?:projects|personal projects|key projects|featured projects|technical projects|academic projects)$/i,
+  certifications: /^(?:certifications|certificates|licenses & certifications|licenses)$/i,
+  achievements: /^(?:achievements|key achievements|awards|honors|awards & honors|honors & awards|accomplishments)$/i,
+  publications: /^(?:publications|selected publications|papers|research papers)$/i,
+  volunteering: /^(?:volunteering|volunteer experience|community service|leadership & community)$/i,
+  languages: /^(?:languages|language proficiency|spoken languages)$/i,
+  interests: /^(?:interests|hobbies|extracurricular activities|activities)$/i,
+  patents: /^(?:patents|intellectual property)$/i,
 };
 
 /**
@@ -74,6 +91,9 @@ const parseResumeDeterministically = (rawText) => {
   // 4. Extract Skills
   const skills = extractSkills(sections.skills, rawText);
 
+  // 4.1 Extract Soft Skills
+  const softSkills = extractSoftSkills(sections.softSkills, rawText);
+
   // 5. Extract Experience
   const experience = extractExperience(sections.experience);
 
@@ -81,12 +101,15 @@ const parseResumeDeterministically = (rawText) => {
   const education = extractEducation(sections.education);
 
   // 7. Extract Projects
-  const projects = extractProjects(sections.projects);
+  const projects = extractProjects(sections.projects, rawText);
 
   // 8. Extract Certifications
   const certifications = extractCertifications(sections.certifications);
 
-  return {
+  // 9. Extract Achievements
+  const achievements = extractAchievements(sections.achievements);
+
+  const rawParsed = {
     extractionSource: 'deterministic_engine',
     title: personalInfo.headline ? `${personalInfo.fullName || 'Professional'} — ${personalInfo.headline}` : 'Professional Portfolio',
     personalInfo,
@@ -94,9 +117,17 @@ const parseResumeDeterministically = (rawText) => {
     experience,
     education,
     skills,
+    softSkills,
     projects,
     certifications,
+    achievements,
     customSections: [],
+  };
+
+  const validation = validateResumeData(rawParsed);
+  return {
+    extractionSource: 'deterministic_engine',
+    ...validation.data,
   };
 };
 
@@ -236,8 +267,15 @@ function partitionSections(lines) {
     experience: [],
     education: [],
     skills: [],
+    softSkills: [],
     projects: [],
     certifications: [],
+    achievements: [],
+    publications: [],
+    volunteering: [],
+    languages: [],
+    interests: [],
+    patents: [],
   };
 
   let currentSection = null;
@@ -489,58 +527,8 @@ function extractEducation(eduLines) {
   return items;
 }
 
-function extractProjects(projLines) {
-  if (!projLines || projLines.length === 0) return [];
-
-  const projects = [];
-  let current = null;
-
-  for (const line of projLines) {
-    const isBullet = /^([•\-*–—]|\d+\.)/.test(line);
-
-    if (!isBullet && line.length < 80 && !line.includes('http')) {
-      if (current && current.title) {
-        projects.push(current);
-      }
-
-      current = {
-        title: line.replace(/[:|–—].*$/, '').trim(),
-        description: '',
-        technologies: [],
-        liveUrl: '',
-        repoUrl: '',
-        highlights: [],
-      };
-
-      // Extract technologies mentioned in parentheses or pipes e.g. "Portfolio [React, Node.js]"
-      const techMatch = line.match(/[\[(](.*?)[\])]/);
-      if (techMatch) {
-        current.technologies = techMatch[1].split(/[,|/]/).map((t) => t.trim());
-      }
-    } else if (current) {
-      const urlMatch = line.match(URL_REGEX);
-      if (urlMatch) {
-        for (const u of urlMatch) {
-          if (u.includes('github.com')) current.repoUrl = u;
-          else current.liveUrl = u;
-        }
-      }
-
-      const cleanText = line.replace(/^([•\-*–—]|\d+\.)\s*/, '').trim();
-      if (cleanText.length > 5 && !cleanText.startsWith('http')) {
-        current.highlights.push(cleanText);
-        if (!current.description) {
-          current.description = cleanText;
-        }
-      }
-    }
-  }
-
-  if (current && current.title) {
-    projects.push(current);
-  }
-
-  return projects;
+function extractProjects(projLines, rawText) {
+  return extractEvidenceBasedProjects(projLines, rawText);
 }
 
 function extractCertifications(certLines) {
@@ -559,8 +547,42 @@ function extractCertifications(certLines) {
     });
 }
 
+function extractSoftSkills(softSkillsLines, rawText) {
+  const found = new Set();
+
+  if (softSkillsLines && softSkillsLines.length > 0) {
+    for (const line of softSkillsLines) {
+      const items = line.split(/[,•|·;]/).map((s) => s.replace(/^[•\-*]\s*/, '').trim());
+      for (const item of items) {
+        if (item.length >= 3 && item.length <= 40) {
+          found.add(item);
+        }
+      }
+    }
+  }
+
+  // Also check for taxonomy items in text
+  for (const skill of SOFT_SKILLS_TAXONOMY) {
+    const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+    if (regex.test(rawText)) {
+      found.add(skill);
+    }
+  }
+
+  return Array.from(found);
+}
+
+function extractAchievements(achievementsLines) {
+  if (!achievementsLines || achievementsLines.length === 0) return [];
+
+  return achievementsLines
+    .map((line) => line.replace(/^[•\-*–—\d.]\s*/, '').trim())
+    .filter((line) => line.length >= 5);
+}
+
 function createEmptyPortfolioData() {
-  return {
+  const empty = {
     extractionSource: 'deterministic_engine',
     title: 'Professional Portfolio',
     personalInfo: {
@@ -579,9 +601,16 @@ function createEmptyPortfolioData() {
     experience: [],
     education: [],
     skills: [],
+    softSkills: [],
     projects: [],
     certifications: [],
+    achievements: [],
     customSections: [],
+  };
+
+  return {
+    extractionSource: 'deterministic_engine',
+    ...validateResumeData(empty).data,
   };
 }
 

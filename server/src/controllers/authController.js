@@ -22,6 +22,15 @@ const register = async (req, res, next) => {
       });
     }
 
+    // Email regex validation
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email address.',
+      });
+    }
+
     // Check if user already exists
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
@@ -49,6 +58,7 @@ const register = async (req, res, next) => {
         email: user.email,
         portfolioCount: user.portfolioCount,
         lastThemeUsed: user.lastThemeUsed,
+        createdAt: user.createdAt,
       },
     });
   } catch (err) {
@@ -100,6 +110,7 @@ const login = async (req, res, next) => {
         email: user.email,
         portfolioCount: user.portfolioCount,
         lastThemeUsed: user.lastThemeUsed,
+        createdAt: user.createdAt,
       },
     });
   } catch (err) {
@@ -108,7 +119,7 @@ const login = async (req, res, next) => {
 };
 
 /**
- * Get current authenticated user
+ * Get current authenticated user (Session Persistence)
  * GET /api/auth/me
  */
 const getMe = async (req, res) => {
@@ -125,5 +136,114 @@ const getMe = async (req, res) => {
   });
 };
 
-module.exports = { register, login, getMe };
+/**
+ * Update user profile
+ * PUT /api/auth/profile
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+    const user = await User.findById(req.user._id);
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    if (name) user.name = name.trim();
+    if (email && email.toLowerCase() !== user.email) {
+      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a valid email address.',
+        });
+      }
+      const existing = await User.findOne({ email: email.toLowerCase() });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: 'An account with this email already exists.',
+        });
+      }
+      user.email = email.toLowerCase();
+    }
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully.',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        portfolioCount: user.portfolioCount,
+        lastThemeUsed: user.lastThemeUsed,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Change user password
+ * PUT /api/auth/change-password
+ */
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both current and new passwords.',
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters.',
+      });
+    }
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect.',
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully.',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  getMe,
+  updateProfile,
+  changePassword,
+};

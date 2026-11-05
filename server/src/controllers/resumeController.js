@@ -5,12 +5,58 @@ const { extractResumeData } = require('../services/aiService');
 const { Portfolio, THEME_LIST } = require('../models/Portfolio');
 const User = require('../models/User');
 const { generateUniqueSlug } = require('../utils/slugify');
+const { validateFileContentSignature } = require('../middleware/upload');
+
+/**
+ * Helper to safely extract text from PDF, DOCX, or text file buffer
+ * Handles file signature validation, scanned PDF detection, and malformed document handling
+ * @param {object} file - Multer file object
+ * @returns {Promise<{ rawText: string, ext: string }>}
+ */
+const processFileToText = async (file) => {
+  const { originalname, buffer } = file;
+  const ext = path.extname(originalname).toLowerCase();
+
+  // 1. Validate binary magic bytes signature
+  const signatureCheck = validateFileContentSignature(file);
+  if (!signatureCheck.valid) {
+    const error = new Error(signatureCheck.error);
+    error.statusCode = 400;
+    error.isValidation = true;
+    throw error;
+  }
+
+  let rawText = '';
+
+  // 2. Extract raw text with dedicated format engines
+  if (ext === '.pdf') {
+    rawText = await extractTextFromPDF(buffer);
+  } else if (ext === '.docx' || ext === '.doc') {
+    rawText = await extractTextFromDOCX(buffer);
+  } else if (ext === '.txt') {
+    rawText = buffer.toString('utf-8').trim();
+  } else {
+    const error = new Error('Unsupported format. Only PDF and DOCX files are allowed.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // 3. Verify minimum text content
+  if (!rawText || rawText.trim().length < 20) {
+    const error = new Error('Insufficient text content extracted from document. Please ensure the resume is not empty or scanned.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return { rawText, ext };
+};
 
 /**
  * Handle resume upload (PDF / DOCX), extract text, parse with AI / fallback, rotate theme, save portfolio
  * POST /api/resume/upload
  */
 const uploadAndParseResume = async (req, res, next) => {
+  const startTime = Date.now();
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -19,42 +65,33 @@ const uploadAndParseResume = async (req, res, next) => {
       });
     }
 
-    const { originalname, buffer } = req.file;
-    const ext = path.extname(originalname).toLowerCase();
+    const { originalname, size } = req.file;
+
+    // Secure diagnostic logging (zero PII)
+    console.log(`[Resume Upload] Processing file: ${path.basename(originalname)} (${size} bytes)`);
+
+    // 1. Extract text with security and format checks
     let rawText = '';
-
-    // 1. Extract raw text based on file format
-    if (ext === '.pdf') {
-      try {
-        rawText = await extractTextFromPDF(buffer);
-      } catch (pdfErr) {
-        // Fallback: If buffer is text-based
-        const textFallback = buffer.toString('utf-8');
-        if (textFallback.length > 50 && !textFallback.includes('\x00')) {
-          rawText = textFallback;
-        } else {
-          throw pdfErr;
-        }
+    try {
+      const extracted = await processFileToText(req.file);
+      rawText = extracted.rawText;
+    } catch (extractErr) {
+      if (extractErr.isScanned) {
+        return res.status(400).json({
+          success: false,
+          isScanned: true,
+          pageCount: extractErr.pageCount,
+          message: extractErr.message,
+        });
       }
-    } else if (ext === '.docx' || ext === '.doc') {
-      rawText = await extractTextFromDOCX(buffer);
-    } else if (ext === '.txt') {
-      rawText = buffer.toString('utf-8');
-    } else {
-      return res.status(400).json({
+      return res.status(extractErr.statusCode || 400).json({
         success: false,
-        message: 'Unsupported format. Only PDF and DOCX files are allowed.',
+        isMalformed: true,
+        message: extractErr.message,
       });
     }
 
-    if (!rawText || rawText.trim().length < 20) {
-      return res.status(400).json({
-        success: false,
-        message: 'Could not extract sufficient text from the uploaded file. Please ensure it is not scanned/empty.',
-      });
-    }
-
-    // 2. Extract structured data with Gemini AI or Deterministic Fallback
+    // 2. Extract structured data with Gemini AI or Deterministic Fallback (Zod-validated)
     const extractionResult = await extractResumeData(rawText);
     const parsedData = extractionResult.data;
 
@@ -71,7 +108,7 @@ const uploadAndParseResume = async (req, res, next) => {
     const baseSlugName = parsedData.personalInfo?.fullName || user.name || 'portfolio';
     const slug = await generateUniqueSlug(baseSlugName);
 
-    // 5. Create Portfolio Record
+    // 5. Create Portfolio Record in MongoDB
     const portfolio = await Portfolio.create({
       user: req.user._id,
       title: parsedData.title || `${parsedData.personalInfo?.fullName || user.name}'s Portfolio`,
@@ -85,8 +122,10 @@ const uploadAndParseResume = async (req, res, next) => {
       experience: parsedData.experience,
       education: parsedData.education,
       skills: parsedData.skills,
+      softSkills: parsedData.softSkills || [],
       projects: parsedData.projects,
       certifications: parsedData.certifications,
+      achievements: parsedData.achievements || [],
       customSections: parsedData.customSections || [],
     });
 
@@ -96,6 +135,9 @@ const uploadAndParseResume = async (req, res, next) => {
       user.portfolioCount = (user.portfolioCount || 0) + 1;
       await user.save();
     }
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[Resume Upload] Success in ${elapsed}ms: source=${extractionResult.source}, theme=${nextTheme}, slug=${slug}`);
 
     res.status(201).json({
       success: true,
@@ -122,20 +164,26 @@ const previewResumeExtract = async (req, res, next) => {
       });
     }
 
-    const { originalname, buffer } = req.file;
-    const ext = path.extname(originalname).toLowerCase();
-    let rawText = '';
+    const { originalname } = req.file;
 
-    if (ext === '.pdf') {
-      try {
-        rawText = await extractTextFromPDF(buffer);
-      } catch (pdfErr) {
-        rawText = buffer.toString('utf-8');
+    let rawText = '';
+    try {
+      const extracted = await processFileToText(req.file);
+      rawText = extracted.rawText;
+    } catch (extractErr) {
+      if (extractErr.isScanned) {
+        return res.status(400).json({
+          success: false,
+          isScanned: true,
+          pageCount: extractErr.pageCount,
+          message: extractErr.message,
+        });
       }
-    } else if (ext === '.docx' || ext === '.doc') {
-      rawText = await extractTextFromDOCX(buffer);
-    } else {
-      rawText = buffer.toString('utf-8');
+      return res.status(extractErr.statusCode || 400).json({
+        success: false,
+        isMalformed: true,
+        message: extractErr.message,
+      });
     }
 
     const extractionResult = await extractResumeData(rawText);

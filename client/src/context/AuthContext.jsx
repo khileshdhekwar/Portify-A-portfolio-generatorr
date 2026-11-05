@@ -53,9 +53,23 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authService.getMe();
       setUser(userData);
+      return userData;
     } catch (err) {
       console.warn('[AuthContext] Failed to refresh user:', err.message);
+      return null;
     }
+  };
+
+  const updateProfile = async (name, email) => {
+    const res = await authService.updateProfile(name, email);
+    if (res.user) {
+      setUser(res.user);
+    }
+    return res;
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    return await authService.changePassword(currentPassword, newPassword);
   };
 
   return (
@@ -69,6 +83,8 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         refreshUser,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}
@@ -83,4 +99,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

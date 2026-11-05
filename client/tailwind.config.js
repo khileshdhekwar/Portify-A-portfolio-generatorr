@@ -9,17 +9,30 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+          50: '#f0f7f6',
+          100: '#dceee9',
+          200: '#bce0d7',
+          300: '#92ccc0',
+          400: '#61b0a3',
+          500: '#3b9487',
+          600: '#176B67', // Official Brand Primary Deep Teal
+          700: '#135653',
+          800: '#124543',
+          900: '#123938',
+          950: '#082020',
+        },
+        ivory: {
+          DEFAULT: '#F7F5EF', // Official Brand Canvas Soft Ivory
+          card: '#FFFFFF',
+          border: '#E6E2D8',
+          subtle: '#EFECE3',
+          dark: '#E8E3D7',
+        },
+        charcoal: {
+          DEFAULT: '#252B2A', // Official Brand Contrast Deep Charcoal
+          muted: '#5A6260',
+          subtle: '#878F8D',
+          border: '#252B2A',
         },
         slate: {
           850: '#151e2e',

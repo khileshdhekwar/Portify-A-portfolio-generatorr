@@ -23,6 +23,7 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [parsingStep, setParsingStep] = useState('');
   const [error, setError] = useState('');
+  const [isScannedError, setIsScannedError] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -36,6 +37,7 @@ export default function UploadPage() {
 
   const validateAndSetFile = (selectedFile) => {
     setError('');
+    setIsScannedError(false);
     if (!selectedFile) return;
 
     const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
@@ -76,6 +78,7 @@ export default function UploadPage() {
 
     setUploading(true);
     setError('');
+    setIsScannedError(false);
 
     try {
       setParsingStep('Extracting text from resume...');
@@ -100,6 +103,7 @@ export default function UploadPage() {
       }
     } catch (err) {
       setError(err.message || 'Failed to process resume. Please try again.');
+      setIsScannedError(Boolean(err.isScanned));
       setUploading(false);
     }
   };
@@ -169,9 +173,16 @@ https://cloudscale-demo.app | https://github.com/alexvance/cloudscale
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-xs text-rose-700">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-            <span>{error}</span>
+          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-xs text-rose-700">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-semibold block">{error}</span>
+              {isScannedError && (
+                <p className="text-slate-600 font-normal">
+                  Recommendation: Scanned photocopies or image-only documents lack an extractable text layer. Please export your resume directly as a PDF or DOCX file from Microsoft Word, Google Docs, or Canva.
+                </p>
+              )}
+            </div>
           </div>
         )}
 

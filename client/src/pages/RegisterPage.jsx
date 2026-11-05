@@ -107,6 +107,7 @@ export default function RegisterPage() {
             />
 
             <Button
+              id="register-submit-btn"
               type="submit"
               variant="primary"
               size="md"

@@ -22,6 +22,16 @@ export const authService = {
     return res.data.user;
   },
 
+  async updateProfile(name, email) {
+    const res = await api.put('/auth/profile', { name, email });
+    return res.data;
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    const res = await api.put('/auth/change-password', { currentPassword, newPassword });
+    return res.data;
+  },
+
   logout() {
     localStorage.removeItem('portify_token');
   },
@@ -30,4 +40,3 @@ export const authService = {
     return localStorage.getItem('portify_token');
   },
 };
-

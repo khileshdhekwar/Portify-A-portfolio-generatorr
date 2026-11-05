@@ -27,7 +27,14 @@ api.interceptors.response.use(
       error.response?.data?.message ||
       error.message ||
       'An unexpected error occurred. Please try again.';
-    return Promise.reject(new Error(message));
+    const customError = new Error(message);
+    if (error.response?.data) {
+      customError.response = error.response;
+      customError.isScanned = Boolean(error.response.data.isScanned);
+      customError.isMalformed = Boolean(error.response.data.isMalformed);
+      customError.status = error.response.status;
+    }
+    return Promise.reject(customError);
   }
 );
 

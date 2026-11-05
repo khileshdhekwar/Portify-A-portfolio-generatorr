@@ -24,41 +24,41 @@ export const typography = {
 
 export const colors = {
   brand: {
-    50: '#f5f3ff',
-    100: '#ede9fe',
-    200: '#ddd6fe',
-    300: '#c4b5fd',
-    400: '#a78bfa',
-    500: '#8b5cf6',
-    600: '#7c3aed',
-    700: '#6d28d9',
-    800: '#5b21b6',
-    900: '#4c1d95',
-    950: '#2e1065',
+    50: '#f0f7f6',
+    100: '#dceee9',
+    200: '#bce0d7',
+    300: '#92ccc0',
+    400: '#61b0a3',
+    500: '#3b9487',
+    600: '#176B67', // Official Brand Primary Deep Teal
+    700: '#135653',
+    800: '#124543',
+    900: '#123938',
+    950: '#082020',
   },
   surface: {
-    base: '#f8fafc',
+    base: '#F7F5EF', // Soft Ivory
     card: '#ffffff',
     raised: '#ffffff',
-    overlay: '#0f172a',
+    overlay: '#252B2A',
   },
   border: {
-    subtle: '#f1f5f9',
-    default: '#e2e8f0',
-    strong: '#cbd5e1',
-    interactive: '#94a3b8',
+    subtle: '#F0ECE3',
+    default: '#E6E2D8',
+    strong: '#D4CEBF',
+    interactive: '#176B67',
   },
   text: {
-    primary: '#0f172a',
-    secondary: '#475569',
-    muted: '#94a3b8',
+    primary: '#252B2A', // Deep Charcoal
+    secondary: '#5A6260',
+    muted: '#878F8D',
     inverse: '#ffffff',
   },
   status: {
     success: '#059669',
     warning: '#d97706',
     error: '#e11d48',
-    info: '#2563eb',
+    info: '#176B67',
   },
 };
 

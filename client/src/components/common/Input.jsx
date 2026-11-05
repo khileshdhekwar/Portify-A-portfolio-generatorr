@@ -16,17 +16,19 @@ export default function Input({
   as = 'input',
   ...props
 }) {
+  const generatedId = React.useId();
+  const inputId = id || name || generatedId;
   const Component = as === 'textarea' ? 'textarea' : 'input';
 
   return (
     <div className={`space-y-1.5 ${className}`}>
       {label && (
-        <label htmlFor={id || name} className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+        <label htmlFor={inputId} className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
           {label} {required && <span className="text-rose-500">*</span>}
         </label>
       )}
       <Component
-        id={id || name}
+        id={inputId}
         name={name}
         type={as === 'textarea' ? undefined : type}
         value={value}

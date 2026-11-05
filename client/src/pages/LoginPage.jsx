@@ -103,6 +103,7 @@ export default function LoginPage() {
             />
 
             <Button
+              id="login-submit-btn"
               type="submit"
               variant="primary"
               size="md"

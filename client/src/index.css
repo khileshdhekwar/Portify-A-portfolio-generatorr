@@ -4,12 +4,12 @@
 
 @layer base {
   :root {
-    --color-surface-bg: #f8fafc;
+    --color-surface-bg: #F7F5EF;
     --color-surface-card: #ffffff;
-    --color-surface-border: #e2e8f0;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-muted: #64748b;
+    --color-surface-border: #E6E2D8;
+    --color-text-primary: #252B2A;
+    --color-text-secondary: #5A6260;
+    --color-text-muted: #878F8D;
   }
 
   body {

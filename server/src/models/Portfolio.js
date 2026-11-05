@@ -91,14 +91,23 @@ const portfolioSchema = new mongoose.Schema(
         items: [{ type: String }],
       },
     ],
+    softSkills: [{ type: String }],
     projects: [
       {
         title: { type: String, default: '' },
         description: { type: String, default: '' },
         technologies: [{ type: String }],
+        dates: { type: String, default: '' },
         liveUrl: { type: String, default: '' },
         repoUrl: { type: String, default: '' },
         highlights: [{ type: String }],
+        sourceEvidence: [{ type: String }],
+        confidence: { type: Number, default: 0.85 },
+        verificationStatus: {
+          type: String,
+          enum: ['verified', 'inferred', 'pending'],
+          default: 'verified',
+        },
       },
     ],
     certifications: [
@@ -109,6 +118,7 @@ const portfolioSchema = new mongoose.Schema(
         credentialUrl: { type: String, default: '' },
       },
     ],
+    achievements: [{ type: String }],
     customSections: [
       {
         title: { type: String, default: '' },

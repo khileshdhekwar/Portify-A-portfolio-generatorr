@@ -13,7 +13,7 @@ export default function Button({
   icon: Icon,
   ...props
 }) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none';
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed select-none';
 
   const sizeStyles = {
     sm: 'text-xs px-3 py-1.5 gap-1.5',
@@ -22,12 +22,12 @@ export default function Button({
   };
 
   const variantStyles = {
-    primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-subtle focus:ring-indigo-500',
-    secondary: 'bg-slate-900 hover:bg-slate-800 text-white shadow-subtle focus:ring-slate-900',
-    outline: 'border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 focus:ring-slate-400',
-    ghost: 'hover:bg-slate-100 text-slate-700 hover:text-slate-900 focus:ring-slate-300',
+    primary: 'bg-[#176B67] hover:bg-[#135653] text-white shadow-subtle focus:ring-[#176B67]',
+    secondary: 'bg-[#252B2A] hover:bg-[#1b1f1e] text-white shadow-subtle focus:ring-[#252B2A]',
+    outline: 'border border-[#E6E2D8] hover:border-[#252B2A]/30 bg-white hover:bg-[#F7F5EF] text-[#252B2A] focus:ring-[#176B67]',
+    ghost: 'hover:bg-[#EAE6DC]/60 text-[#252B2A] hover:text-[#176B67] focus:ring-[#176B67]',
     danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-subtle focus:ring-rose-500',
-    subtle: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 focus:ring-indigo-400',
+    subtle: 'bg-[#176B67]/10 hover:bg-[#176B67]/20 text-[#176B67] font-semibold focus:ring-[#176B67]',
   };
 
   return (

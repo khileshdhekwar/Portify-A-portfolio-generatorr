@@ -1,66 +1,91 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../config/env');
 const { parseResumeDeterministically } = require('./deterministicParser');
+const { validateResumeData } = require('../validators/resumeSchema');
+const { deduplicateProjects } = require('./projectExtractionService');
 
-// Model preference: Gemini 2.5 Flash / 1.5 Flash (free tier eligible, high speed, structured JSON support)
-const MODEL_NAME = 'gemini-1.5-flash';
+// Verified Google AI Studio Free-Tier production models
+// gemini-1.5-flash: 15 RPM, 1,000,000 TPM, 1,500 RPD (fast, structured JSON support)
+// gemini-2.0-flash: Next-gen multimodal flash
+const PRIMARY_MODEL = 'gemini-1.5-flash';
+const SECONDARY_MODEL = 'gemini-2.0-flash';
 
 let genAI = null;
-if (config.geminiApiKey) {
+if (config.geminiApiKey && config.geminiApiKey.trim().length > 0) {
   try {
     genAI = new GoogleGenerativeAI(config.geminiApiKey);
   } catch (err) {
-    console.warn('[AI Service] Failed to initialize GoogleGenerativeAI:', err.message);
+    console.warn('[AI Service] Failed to initialize GoogleGenerativeAI client:', err.message);
   }
 }
 
 /**
- * Check if AI service is active and properly configured
+ * Check if AI service is active and properly configured with a non-placeholder key
  */
 const isAIAvailable = () => {
-  return Boolean(config.geminiApiKey && config.geminiApiKey.trim().length > 0 && genAI);
+  return Boolean(
+    config.geminiApiKey &&
+    config.geminiApiKey.trim().length > 10 &&
+    !config.geminiApiKey.includes('your_gemini_api_key') &&
+    genAI
+  );
 };
 
 /**
  * Extract structured resume data with Google Gemini, or seamlessly fall back to Deterministic Parser
+ * Validated strictly against the Zod resumeExtractionSchema.
+ *
  * @param {string} rawResumeText
  * @returns {Promise<{ data: object, source: 'ai_gemini' | 'deterministic_engine', message?: string }>}
  */
 const extractResumeData = async (rawResumeText) => {
+  // If AI key is not available or invalid, execute deterministic fallback immediately
   if (!isAIAvailable()) {
-    console.log('[AI Service] Gemini API key not detected. Falling back to deterministic rule-based parser.');
+    console.log('[AI Service] Gemini API key not configured. Using Portify Deterministic Rule Engine.');
     const deterministicData = parseResumeDeterministically(rawResumeText);
     return {
       data: deterministicData,
       source: 'deterministic_engine',
-      message: 'Processed using Portify Deterministic Rule Engine (Gemini API key not configured). All resume facts preserved 100% faithfully.',
+      message: 'Processed via Portify Deterministic Rule Engine (Gemini API key not configured). All resume facts preserved 100% faithfully.',
     };
   }
 
+  // Diagnostic log without PII
+  console.log(`[AI Service] Processing document (text length: ${rawResumeText.length} chars) using model ${PRIMARY_MODEL}`);
+
   try {
     const model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
+      model: PRIMARY_MODEL,
       generationConfig: {
         responseMimeType: 'application/json',
-        temperature: 0.1, // Low temperature to prevent hallucination
+        temperature: 0.1, // Near-zero temperature strictly enforces factual adherence
       },
     });
 
     const prompt = `
-You are an expert ATS and resume parsing AI.
-Your task is to extract structured portfolio data from the following resume text.
+You are an expert ATS and resume parsing AI engine.
+Your mission is to extract structured portfolio data from the following resume text.
 
-STRICT GROUNDING RULES:
-1. Extract ONLY facts, roles, titles, companies, dates, skills, and accomplishments explicitly present in the text.
-2. DO NOT invent, fabricate, extrapolate or exaggerate experience, degrees, skills, or metrics.
-3. If a detail is missing (e.g. phone, github, gpa), leave it as an empty string "".
-4. Categorize skills appropriately into logical categories (e.g. "Languages", "Frameworks & Libraries", "Databases & Cloud", "Developer Tools").
+STRICT ACCURACY & GROUNDING RULES:
+1. The resume is the absolute source of truth.
+2. Extract ONLY facts, roles, titles, companies, dates, skills, and accomplishments explicitly present in the text.
+3. NEVER invent, extrapolate, or exaggerate experience, qualifications, skills, or statistics.
+4. If a field or detail is not present in the resume, leave it as an empty string "" or an empty array [].
+5. Preserve all original project names, job titles, and dates exactly as written.
+6. Categorize technical skills logically (e.g. "Languages", "Frameworks & Libraries", "Databases & Cloud", "Tools & Platforms").
+7. Extract soft skills into "softSkills" (e.g. "Leadership", "Problem Solving", "Mentoring", "Agile").
+8. Extract awards, honors, and notable milestones into "achievements".
+9. CRITICAL PROJECT EXTRACTION RULES:
+   - Extract distinct projects ONLY when there is genuine project evidence.
+   - NEVER split job roles, dates, or sentence bullet points into separate artificial projects.
+   - If a resume has 4 projects, output EXACTLY 4 projects.
+   - Do NOT treat dates (e.g. "2022 - 2023"), roles (e.g. "Full Stack Developer"), or headers as project titles.
 
-Return valid JSON adhering strictly to this schema:
+Return a valid JSON object strictly matching this schema:
 {
   "personalInfo": {
     "fullName": "string",
-    "headline": "string (e.g. Senior Full Stack Engineer)",
+    "headline": "string",
     "email": "string",
     "phone": "string",
     "location": "string",
@@ -70,7 +95,7 @@ Return valid JSON adhering strictly to this schema:
     "linkedin": "string",
     "twitter": "string"
   },
-  "summary": "string (1-3 sentences summary faithfully synthesized from experience)",
+  "summary": "string",
   "experience": [
     {
       "role": "string",
@@ -99,6 +124,7 @@ Return valid JSON adhering strictly to this schema:
       "items": ["string"]
     }
   ],
+  "softSkills": ["string"],
   "projects": [
     {
       "title": "string",
@@ -106,6 +132,7 @@ Return valid JSON adhering strictly to this schema:
       "technologies": ["string"],
       "liveUrl": "string",
       "repoUrl": "string",
+      "dates": "string",
       "highlights": ["string"]
     }
   ],
@@ -116,7 +143,8 @@ Return valid JSON adhering strictly to this schema:
       "issueDate": "string",
       "credentialUrl": "string"
     }
-  ]
+  ],
+  "achievements": ["string"]
 }
 
 RESUME TEXT:
@@ -131,31 +159,20 @@ ${rawResumeText}
 
     const parsedJson = JSON.parse(responseText);
 
-    // Validate and sanitize data
+    // Apply deduplication and boundary verification to projects before validation
+    if (Array.isArray(parsedJson.projects)) {
+      parsedJson.projects = deduplicateProjects(parsedJson.projects);
+    }
+
+    // Validate and sanitize AI response through Zod schema
+    const validation = validateResumeData(parsedJson);
+
     const structuredData = {
       extractionSource: 'ai_gemini',
-      title: parsedJson.personalInfo?.headline
-        ? `${parsedJson.personalInfo.fullName || 'Professional'} — ${parsedJson.personalInfo.headline}`
+      title: validation.data.personalInfo?.headline
+        ? `${validation.data.personalInfo.fullName || 'Professional'} — ${validation.data.personalInfo.headline}`
         : 'Professional Portfolio',
-      personalInfo: {
-        fullName: parsedJson.personalInfo?.fullName || '',
-        headline: parsedJson.personalInfo?.headline || '',
-        email: parsedJson.personalInfo?.email || '',
-        phone: parsedJson.personalInfo?.phone || '',
-        location: parsedJson.personalInfo?.location || '',
-        avatarUrl: parsedJson.personalInfo?.avatarUrl || '',
-        website: parsedJson.personalInfo?.website || '',
-        github: parsedJson.personalInfo?.github || '',
-        linkedin: parsedJson.personalInfo?.linkedin || '',
-        twitter: parsedJson.personalInfo?.twitter || '',
-      },
-      summary: parsedJson.summary || '',
-      experience: Array.isArray(parsedJson.experience) ? parsedJson.experience : [],
-      education: Array.isArray(parsedJson.education) ? parsedJson.education : [],
-      skills: Array.isArray(parsedJson.skills) ? parsedJson.skills : [],
-      projects: Array.isArray(parsedJson.projects) ? parsedJson.projects : [],
-      certifications: Array.isArray(parsedJson.certifications) ? parsedJson.certifications : [],
-      customSections: [],
+      ...validation.data,
     };
 
     return {
@@ -164,7 +181,7 @@ ${rawResumeText}
       message: 'Successfully extracted and structured with Google Gemini AI.',
     };
   } catch (err) {
-    console.error('[AI Service Error]: Gemini API call failed:', err.message);
+    console.warn(`[AI Service Warning]: Primary model (${PRIMARY_MODEL}) call failed: ${err.message}. Triggering deterministic fallback.`);
     const deterministicData = parseResumeDeterministically(rawResumeText);
     return {
       data: deterministicData,
@@ -187,7 +204,7 @@ const enhanceSummary = async (currentSummary, experienceList, skillsList) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+    const model = genAI.getGenerativeModel({ model: PRIMARY_MODEL });
     const prompt = `
 You are an executive resume and portfolio writer.
 Craft a compelling, polished 2-3 sentence professional summary for a portfolio hero section.
@@ -211,7 +228,7 @@ Return ONLY the enhanced summary text, with no quotes or introductory remarks.
       message: 'Summary enhanced with Gemini AI.',
     };
   } catch (err) {
-    console.error('[AI Enhance Summary Error]:', err.message);
+    console.warn('[AI Enhance Summary Warning]:', err.message);
     return {
       enhancedText: currentSummary,
       source: 'deterministic_engine',
@@ -233,7 +250,7 @@ const enhanceHighlights = async (role, company, highlights) => {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: MODEL_NAME,
+      model: PRIMARY_MODEL,
       generationConfig: { responseMimeType: 'application/json' },
     });
 
@@ -260,7 +277,7 @@ Return a JSON array of strings:
       message: 'Bullet points enhanced with Gemini AI.',
     };
   } catch (err) {
-    console.error('[AI Enhance Highlights Error]:', err.message);
+    console.warn('[AI Enhance Highlights Warning]:', err.message);
     return {
       enhancedHighlights: highlights,
       source: 'deterministic_engine',
@@ -274,5 +291,6 @@ module.exports = {
   extractResumeData,
   enhanceSummary,
   enhanceHighlights,
+  PRIMARY_MODEL,
+  SECONDARY_MODEL,
 };
-

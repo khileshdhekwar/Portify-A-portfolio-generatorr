@@ -45,9 +45,12 @@ test.describe('Portify AI End-to-End User Journeys', () => {
     await expect(generateBtn).toBeVisible();
     await generateBtn.click();
 
-    // 4. Verify Studio Editor loads with live preview
+    // Verify Studio Editor loads with live preview
     await page.waitForURL(/\/editor\//, { timeout: 20000 });
     await expect(page.getByText('Alexander Vance').first()).toBeVisible({ timeout: 10000 });
+
+    // Open Personal Info tab
+    await page.getByRole('button', { name: /1\. Personal Info/i }).click();
 
     // Verify Personal details tab inputs
     const fullNameInput = page.locator('input[value="Alexander Vance"]');
@@ -59,7 +62,7 @@ test.describe('Portify AI End-to-End User Journeys', () => {
     await page.getByTitle('Desktop view (100%)').click();
 
     // Switch to Theme Tab
-    await page.getByRole('button', { name: 'Themes' }).click();
+    await page.getByRole('button', { name: /Theme & Publish/i }).click();
     await expect(page.getByText('Select Portfolio Theme')).toBeVisible();
 
     // Switch to Modern Glass theme
@@ -69,7 +72,7 @@ test.describe('Portify AI End-to-End User Journeys', () => {
     // Save changes
     const saveBtn = page.getByRole('button', { name: 'Save Changes' });
     await saveBtn.click();
-    await expect(page.getByRole('button', { name: 'Saved!' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Saved to MongoDB!/i)).toBeVisible({ timeout: 10000 });
 
     // 5. Public Portfolio Verification
     // Get public URL link from top of editor

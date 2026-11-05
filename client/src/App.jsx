@@ -11,6 +11,8 @@ import DashboardPage from './pages/DashboardPage';
 import UploadPage from './pages/UploadPage';
 import EditorPage from './pages/EditorPage';
 import PublicPortfolioPage from './pages/PublicPortfolioPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -69,7 +71,17 @@ export default function App() {
         }
       />
 
-      {/* Protected Split-Screen Editor Studio (Full Height Shell without extra footer) */}
+      {/* Protected Split-Screen Editor & Resume Review Studio */}
+      <Route
+        path="/review/:id"
+        element={
+          <ProtectedRoute>
+            <AppShell showFooter={false} fullWidth>
+              <EditorPage initialTab="overview" />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/editor/:id"
         element={
@@ -83,6 +95,24 @@ export default function App() {
 
       {/* Public Portfolio View (Unique Slug) */}
       <Route path="/p/:slug" element={<PublicPortfolioPage />} />
+
+      {/* Legal Infrastructure */}
+      <Route
+        path="/privacy"
+        element={
+          <AppShell>
+            <PrivacyPolicyPage />
+          </AppShell>
+        }
+      />
+      <Route
+        path="/terms"
+        element={
+          <AppShell>
+            <TermsPage />
+          </AppShell>
+        }
+      />
 
       {/* 404 Catch-All */}
       <Route

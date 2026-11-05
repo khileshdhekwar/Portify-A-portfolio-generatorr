@@ -33,10 +33,11 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Rate Limiter for API stability
+// Rate Limiter for API stability (relaxed in development/test, strict in production)
+const isDevOrTest = config.nodeEnv === 'development' || config.nodeEnv === 'test' || process.env.NODE_ENV === 'test';
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // 300 requests per 15 min
+  max: isDevOrTest ? 20000 : 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

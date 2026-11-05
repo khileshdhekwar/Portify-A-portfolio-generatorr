@@ -38,9 +38,9 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`w-full ${maxWidth} bg-white rounded-2xl shadow-elevated border border-slate-200 overflow-hidden transform transition-all animate-in zoom-in-95 duration-150`}
+        className={`w-full ${maxWidth} max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-elevated border border-slate-200 overflow-hidden transform transition-all animate-in zoom-in-95 duration-150`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
           <h3 id="modal-title" className="text-base font-semibold text-slate-900">
             {title}
           </h3>
@@ -51,7 +51,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

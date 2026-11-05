@@ -6,16 +6,15 @@ import Badge from '../components/common/Badge';
 import { THEMES } from '../components/themes/ThemeRenderer';
 import ThemeRenderer from '../components/themes/ThemeRenderer';
 import {
-  Sparkles,
   Upload,
   ArrowRight,
   ShieldCheck,
   Download,
   QrCode,
   Layout,
-  Cpu,
-  Layers,
+  FileCheck2,
   CheckCircle2,
+  Sparkles as SparklesIcon,
 } from 'lucide-react';
 
 // Sample mock data for interactive theme showcase
@@ -93,23 +92,23 @@ export default function HomePage() {
   const previewPortfolio = { ...DEMO_PORTFOLIO, theme: activeTheme };
 
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="bg-[#F7F5EF] text-[#252B2A] min-h-screen font-sans selection:bg-[#176B67]/20 selection:text-[#176B67]">
       {/* Hero Section */}
-      <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden border-b border-slate-200 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-semibold text-indigo-700 mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>AI-Powered Resume to Portfolio Builder</span>
+      <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden border-b border-[#E6E2D8] bg-[#F7F5EF]">
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#176B67]/10 border border-[#176B67]/20 text-xs font-semibold text-[#176B67] mb-6 shadow-subtle">
+            <FileCheck2 className="w-3.5 h-3.5 text-[#176B67]" />
+            <span>Factual ATS Resume to Web Portfolio Engine</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12]">
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#252B2A] max-w-4xl mx-auto leading-[1.12]">
             Your Resume, Your Identity,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+            <span className="text-[#176B67]">
               Your Portfolio.
             </span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg sm:text-xl text-[#5A6260] max-w-2xl mx-auto leading-relaxed">
             Convert your PDF or DOCX resume into an editable, interactive personal portfolio website in seconds. Five handcrafted themes, custom slugs, QR sharing, and standalone ZIP exports.
           </p>
 
@@ -128,21 +127,21 @@ export default function HomePage() {
           </div>
 
           {/* Value Highlights */}
-          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-wrap items-center justify-center gap-y-3 gap-x-8 text-xs text-slate-500">
-            <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="mt-12 pt-8 border-t border-[#E6E2D8] flex flex-wrap items-center justify-center gap-y-3 gap-x-8 text-xs text-[#5A6260]">
+            <span className="flex items-center gap-1.5 font-medium text-[#252B2A]">
+              <ShieldCheck className="w-4 h-4 text-[#176B67]" />
               100% Grounded Extraction (Zero Hallucinations)
             </span>
-            <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <Layout className="w-4 h-4 text-indigo-600" />
+            <span className="flex items-center gap-1.5 font-medium text-[#252B2A]">
+              <Layout className="w-4 h-4 text-[#176B67]" />
               5 Curated Themes + Auto-Rotation
             </span>
-            <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <Download className="w-4 h-4 text-slate-700" />
+            <span className="flex items-center gap-1.5 font-medium text-[#252B2A]">
+              <Download className="w-4 h-4 text-[#176B67]" />
               Offline Self-Contained ZIP Export
             </span>
-            <span className="flex items-center gap-1.5 font-medium text-slate-700">
-              <QrCode className="w-4 h-4 text-violet-600" />
+            <span className="flex items-center gap-1.5 font-medium text-[#252B2A]">
+              <QrCode className="w-4 h-4 text-[#176B67]" />
               Instant Mobile QR Deep Link
             </span>
           </div>
@@ -150,13 +149,13 @@ export default function HomePage() {
       </section>
 
       {/* Interactive Theme Showcase */}
-      <section className="py-20 bg-slate-50 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-white border-b border-[#E6E2D8]">
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#252B2A]">
               Five Professional Themes. Zero Generic Templates.
             </h2>
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-[#5A6260]">
               Select any theme below to preview how your extracted resume instantly transforms into a distinct visual identity.
             </p>
           </div>
@@ -167,10 +166,10 @@ export default function HomePage() {
               <button
                 key={t.id}
                 onClick={() => setActiveTheme(t.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all select-none ${
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all select-none ${
                   activeTheme === t.id
-                    ? 'bg-slate-900 text-white shadow-subtle'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300'
+                    ? 'bg-[#176B67] text-white shadow-subtle'
+                    : 'bg-[#F7F5EF] text-[#252B2A] border border-[#E6E2D8] hover:border-[#176B67]/40'
                 }`}
               >
                 {t.name}
@@ -179,24 +178,24 @@ export default function HomePage() {
           </div>
 
           {/* Live Preview Container Window */}
-          <div className="border border-slate-300 rounded-2xl shadow-elevated bg-white overflow-hidden max-w-4xl mx-auto">
+          <div className="border border-[#E6E2D8] rounded-2xl shadow-elevated bg-white overflow-hidden max-w-6xl mx-auto">
             {/* Window Frame Bar */}
-            <div className="bg-slate-100 border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+            <div className="bg-[#F7F5EF] border-b border-[#E6E2D8] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-slate-300"></span>
-                <span className="w-3 h-3 rounded-full bg-slate-300"></span>
-                <span className="w-3 h-3 rounded-full bg-slate-300"></span>
-                <span className="ml-3 text-xs font-mono text-slate-500">
+                <span className="w-3 h-3 rounded-full bg-[#D8D2C4]"></span>
+                <span className="w-3 h-3 rounded-full bg-[#D8D2C4]"></span>
+                <span className="w-3 h-3 rounded-full bg-[#D8D2C4]"></span>
+                <span className="ml-3 text-xs font-mono text-[#5A6260]">
                   portify.ai/p/elena-rostova ({activeTheme})
                 </span>
               </div>
-              <Badge variant="indigo" size="sm">
+              <Badge variant="teal" size="sm">
                 Live Interactive Preview
               </Badge>
             </div>
 
             {/* Embedded Portfolio */}
-            <div className="max-h-[520px] overflow-y-auto">
+            <div className="max-h-[580px] overflow-y-auto">
               <ThemeRenderer portfolio={previewPortfolio} qrCodeUrl="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://portify.ai" />
             </div>
           </div>
@@ -204,59 +203,59 @@ export default function HomePage() {
       </section>
 
       {/* 3-Step Workflow Section */}
-      <section className="py-20 bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-[#F7F5EF] border-b border-[#E6E2D8]">
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#252B2A]">
               How Portify AI Works
             </h2>
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-[#5A6260]">
               A frictionless workflow designed to save hours of manual portfolio design and coding.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+            <div className="p-6 rounded-2xl border border-[#E6E2D8] bg-white shadow-subtle flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#176B67]/10 text-[#176B67] flex items-center justify-center font-bold text-sm mb-4">
                   1
                 </div>
-                <h3 className="font-bold text-base text-slate-900 mb-2">Upload Resume</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-base text-[#252B2A] mb-2">Upload Resume</h3>
+                <p className="text-xs text-[#5A6260] leading-relaxed">
                   Drop your existing PDF or DOCX file. Our engine parses raw text into clean, structured career records.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-xs text-indigo-600 font-medium">
+              <div className="mt-6 pt-4 border-t border-[#E6E2D8] text-xs text-[#176B67] font-medium">
                 Supports standard ATS formats
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+            <div className="p-6 rounded-2xl border border-[#E6E2D8] bg-white shadow-subtle flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#176B67]/10 text-[#176B67] flex items-center justify-center font-bold text-sm mb-4">
                   2
                 </div>
-                <h3 className="font-bold text-base text-slate-900 mb-2">AI &amp; Rule Extraction</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-base text-[#252B2A] mb-2">AI &amp; Rule Extraction</h3>
+                <p className="text-xs text-[#5A6260] leading-relaxed">
                   Gemini AI structures your personal info, experience, skills, education, and projects without inventing false qualifications.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-xs text-indigo-600 font-medium">
+              <div className="mt-6 pt-4 border-t border-[#E6E2D8] text-xs text-[#176B67] font-medium">
                 Strict factual integrity guaranteed
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+            <div className="p-6 rounded-2xl border border-[#E6E2D8] bg-white shadow-subtle flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#176B67]/10 text-[#176B67] flex items-center justify-center font-bold text-sm mb-4">
                   3
                 </div>
-                <h3 className="font-bold text-base text-slate-900 mb-2">Live Studio &amp; Share</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <h3 className="font-bold text-base text-[#252B2A] mb-2">Live Studio &amp; Share</h3>
+                <p className="text-xs text-[#5A6260] leading-relaxed">
                   Fine-tune any field in the live studio. Publish to your unique public link, download a static ZIP website, or share via QR code.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-slate-200/60 text-xs text-indigo-600 font-medium">
+              <div className="mt-6 pt-4 border-t border-[#E6E2D8] text-xs text-[#176B67] font-medium">
                 Instant public slug &amp; offline ZIP
               </div>
             </div>
@@ -265,18 +264,19 @@ export default function HomePage() {
       </section>
 
       {/* Final Call to Action */}
-      <section className="py-20 bg-slate-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="py-20 bg-[#252B2A] text-white relative overflow-hidden border-t border-[#353D3B]">
+        <div className="absolute inset-0 bg-radial-gradient from-[#176B67]/20 via-transparent to-transparent pointer-events-none" />
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Ready to Build Your Personal Portfolio?
           </h2>
-          <p className="mt-4 text-base text-slate-300 max-w-xl mx-auto">
+          <p className="mt-4 text-base text-[#E6E2D8]/80 max-w-xl mx-auto">
             Upload your resume now and launch your online portfolio in under 30 seconds.
           </p>
           <div className="mt-8 flex justify-center">
             <Link to={isAuthenticated ? '/upload' : '/register'}>
-              <Button size="lg" variant="primary" icon={Sparkles}>
-                Get Started for Free
+              <Button size="lg" variant="primary" icon={ArrowRight} className="shadow-elevated">
+                Start Building Free
               </Button>
             </Link>
           </div>
