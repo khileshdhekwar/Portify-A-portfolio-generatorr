@@ -1339,21 +1339,25 @@ export default function EditorPage({ initialTab }) {
                   )}
 
                   <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
-                    {/* Photo Preview Circle */}
+                    {/* Photo Preview Frame (Passport 7:9 ratio) */}
                     <div className="relative group shrink-0">
                       {portfolio.personalInfo?.avatarUrl ? (
                         <img
                           src={portfolio.personalInfo.avatarUrl}
                           alt="Profile Preview"
-                          className="w-16 h-16 rounded-full object-cover border-2 border-[#176B67] shadow-subtle"
+                          style={{ aspectRatio: '7/9' }}
+                          className="w-14 aspect-[7/9] rounded-xl object-cover object-center border-2 border-[#176B67] shadow-subtle"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-[#F7F5EF] border-2 border-dashed border-[#E6E2D8] flex items-center justify-center text-[#878F8D]">
-                          <User className="w-7 h-7" />
+                        <div
+                          style={{ aspectRatio: '7/9' }}
+                          className="w-14 aspect-[7/9] rounded-xl bg-[#F7F5EF] border-2 border-dashed border-[#E6E2D8] flex items-center justify-center text-[#878F8D]"
+                        >
+                          <User className="w-6 h-6" />
                         </div>
                       )}
                       {avatarUploading && (
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
                           <Loader2 className="w-5 h-5 text-white animate-spin" />
                         </div>
                       )}

@@ -8,7 +8,7 @@ const { extractEvidenceBasedProjects } = require('./projectExtractionService');
 
 // Regex patterns
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-const PHONE_REGEX = /(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?|(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/;
+const PHONE_REGEX = /(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?|(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,5}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}/;
 const GITHUB_REGEX = /(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)/i;
 const LINKEDIN_REGEX = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i;
 const TWITTER_REGEX = /(?:https?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/([a-zA-Z0-9_]+)/i;
@@ -325,6 +325,40 @@ function extractSummary(summaryLines, allLines) {
 }
 
 function extractSkills(skillsLines, rawText) {
+  // 1. High-precision extraction of explicit categories in skills section
+  if (skillsLines && skillsLines.length > 0) {
+    const explicitCategories = [];
+    for (const rawLine of skillsLines) {
+      const line = rawLine.replace(/^[•\-*✦▪▸►>]\s*/, '').trim();
+      // Match "Category: Items" or "**Category:** Items" or "Category - Items"
+      const match = line.match(/^(\*\*)?([A-Za-z0-9\s&,/+_-]{2,40}?)(\*\*)?\s*[:\-–—]\s*(.+)$/);
+      if (match) {
+        const catName = match[2].trim();
+        const itemsStr = match[4].trim();
+        // Ensure category name doesn't match section headers or common words
+        if (!/^(?:experience|education|summary|projects|certifications|contact|objective)$/i.test(catName)) {
+          // Split by comma or semicolon, respecting parentheses like "SQL (MySQL)"
+          const items = itemsStr
+            .split(/[,;](?![^(]*\))/)
+            .map((s) => s.replace(/^[•\-*✦▪▸►>]\s*/, '').trim())
+            .filter((s) => s.length > 0 && s.length < 60);
+
+          if (items.length > 0) {
+            explicitCategories.push({
+              category: catName,
+              items,
+            });
+          }
+        }
+      }
+    }
+
+    if (explicitCategories.length > 0) {
+      return explicitCategories;
+    }
+  }
+
+  // 2. Fallback to SKILL_TAXONOMY matching
   const skillsText = skillsLines.length > 0 ? skillsLines.join('\n') : rawText;
   const categoriesMap = {
     'Languages': new Set(),
@@ -456,11 +490,53 @@ function extractEducation(eduLines) {
   const items = [];
   let currentItem = null;
 
-  const degreeKeywords = /bachelor|master|ph\.?d|b\.?s|m\.?s|b\.?tech|m\.?tech|associate|diploma|degree/i;
-  const institutionKeywords = /university|college|institute|school|academy/i;
+  const degreeKeywords = /bachelor|master|ph\.?d|b\.?s|m\.?s|b\.?tech|m\.?tech|b\.?e|m\.?e|bca|mca|associate|diploma|degree|higher secondary certificate|secondary school certificate|hsc|ssc|intermediate|matriculation|high school|12th|10th/i;
+  const institutionKeywords = /university|college|institute|school|academy|vidyalaya|polytechnic/i;
 
   for (const line of eduLines) {
     const isBullet = /^([•\-*–—]|\d+\.)/.test(line);
+
+    // Check GPA, Percentage, Marks
+    const gpaMatch = line.match(/(?:CGPA|GPA|Marks|Percentage|Grade)?[:\s]*((?:[0-9]{1,2}(?:\.[0-9]{1,2})?%|(?:[0-9]{1,2}(?:\.[0-9]{1,2})?\s*(?:\/\s*10(?:\.0)?)?)))/i);
+    if (currentItem && !currentItem.gpa && gpaMatch && (line.toLowerCase().includes('gpa') || line.toLowerCase().includes('percentage') || line.toLowerCase().includes('cgpa') || line.includes('%'))) {
+      currentItem.gpa = gpaMatch[1].trim();
+      continue;
+    }
+
+    // Check if line contains a piped or dashed complete education record:
+    // e.g. "B.Tech in Information Technology | Pune Institute of Computer Technology | 2021 - 2025"
+    if (!isBullet && (line.includes('|') || line.includes(' - ') || line.includes(' — ')) && (degreeKeywords.test(line) || institutionKeywords.test(line))) {
+      if (currentItem && (currentItem.degree || currentItem.institution)) {
+        items.push(currentItem);
+      }
+
+      const parts = line.split(/\s*\|\s*|\s+[-—]\s+/);
+      let deg = '';
+      let inst = '';
+      let gradDate = '';
+
+      for (const part of parts) {
+        const trimmedPart = part.trim();
+        const yearM = trimmedPart.match(/\b(19|20)\d{2}(?:\s*[-–—to]+\s*(?:(?:19|20)\d{2}|present|current))?\b/i);
+        if (yearM && !gradDate) {
+          gradDate = yearM[0];
+        } else if (degreeKeywords.test(trimmedPart) && !deg) {
+          deg = trimmedPart;
+        } else if (!inst) {
+          inst = trimmedPart;
+        }
+      }
+
+      currentItem = {
+        institution: inst || (degreeKeywords.test(parts[0]) && parts[1] ? parts[1].trim() : ''),
+        degree: deg || parts[0]?.trim() || '',
+        fieldOfStudy: '',
+        graduationDate: gradDate,
+        gpa: '',
+        highlights: [],
+      };
+      continue;
+    }
 
     // If current item needs institution and this line is an institution:
     if (currentItem && !currentItem.institution && institutionKeywords.test(line)) {
@@ -475,16 +551,9 @@ function extractEducation(eduLines) {
     }
 
     // If current item needs dates and this line is a year:
-    const yearMatch = line.match(/\b(19|20)\d{2}\b/);
-    if (currentItem && !currentItem.graduationDate && yearMatch && line.length < 30) {
+    const yearMatch = line.match(/\b(19|20)\d{2}(?:\s*[-–—to]+\s*(?:(?:19|20)\d{2}|present|current))?\b/i);
+    if (currentItem && !currentItem.graduationDate && yearMatch && line.length < 40) {
       currentItem.graduationDate = yearMatch[0];
-      continue;
-    }
-
-    // Check GPA
-    const gpaMatch = line.match(/GPA:?\s*([0-4]\.\d{1,2})/i);
-    if (currentItem && gpaMatch) {
-      currentItem.gpa = gpaMatch[1];
       continue;
     }
 
@@ -537,11 +606,47 @@ function extractCertifications(certLines) {
   return certLines
     .filter((l) => l.trim().length > 3)
     .map((line) => {
-      const clean = line.replace(/^[•\-*]\s*/, '').trim();
+      const clean = line.replace(/^[•\-*✦▪▸►>]\s*/, '').trim();
+      let name = clean;
+      let issuer = '';
+      let issueDate = '';
+
+      const yearMatch = clean.match(/\b(20\d{2}|19\d{2})\b/);
+      if (yearMatch) {
+        issueDate = yearMatch[0];
+      }
+
+      if (clean.includes('|') || clean.includes(' - ') || clean.includes(' — ')) {
+        const parts = clean.split(/\s*\|\s*|\s+[-—]\s+/);
+        name = parts[0].trim();
+        if (parts[1]) {
+          if (/\b(20\d{2}|19\d{2})\b/.test(parts[1])) {
+            issueDate = parts[1].trim();
+          } else {
+            issuer = parts[1].trim();
+          }
+        }
+        if (parts[2]) {
+          if (/\b(20\d{2}|19\d{2})\b/.test(parts[2])) {
+            issueDate = parts[2].trim();
+          } else if (!issuer) {
+            issuer = parts[2].trim();
+          }
+        }
+      } else {
+        const knownIssuers = ['Oracle', 'AWS', 'Amazon', 'Google', 'Microsoft', 'Meta', 'IBM', 'Coursera', 'Udemy', 'LinkedIn', 'Cisco', 'IIT'];
+        for (const iss of knownIssuers) {
+          if (new RegExp(`\\b${iss}\\b`, 'i').test(clean)) {
+            issuer = iss;
+            break;
+          }
+        }
+      }
+
       return {
-        name: clean,
-        issuer: '',
-        issueDate: '',
+        name,
+        issuer,
+        issueDate,
         credentialUrl: '',
       };
     });

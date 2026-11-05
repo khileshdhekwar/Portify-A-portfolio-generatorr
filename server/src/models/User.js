@@ -37,19 +37,31 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    passwordChangedAt: {
+      type: Date,
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving
+// Hash password before saving and increment tokenVersion to revoke old JWTs
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
     return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date();
+    this.tokenVersion = (this.tokenVersion || 0) + 1;
+  }
 });
 
 // Compare entered password with hashed password
@@ -57,12 +69,21 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT Auth Token
+// Check if password was changed after a JWT token was issued
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
+
+// Generate JWT Auth Token with restricted HS256 algorithm and tokenVersion
 userSchema.methods.generateAuthToken = function () {
   return jwt.sign(
-    { id: this._id, email: this.email, name: this.name },
+    { id: this._id, email: this.email, name: this.name, tokenVersion: this.tokenVersion || 0 },
     config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn }
+    { algorithm: 'HS256', expiresIn: config.jwtExpiresIn }
   );
 };
 

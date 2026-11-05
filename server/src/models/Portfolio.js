@@ -1,12 +1,5 @@
 const mongoose = require('mongoose');
-
-const THEME_LIST = [
-  'minimal-pro',
-  'dark-developer',
-  'creative-gradient',
-  'corporate-elite',
-  'modern-glass',
-];
+const { THEME_LIST } = require('../constants');
 
 const portfolioSchema = new mongoose.Schema(
   {

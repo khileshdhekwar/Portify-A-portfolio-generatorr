@@ -21,6 +21,64 @@ const METADATA_LABEL_REGEX = /^(?:technologies(?:\s*used)?|tech\s*stack|tools\s*
 const BULLET_REGEX = /^[•\-*✦▪▸►>]\s+/;
 const NUMBERED_HEADER_REGEX = /^\d+[\.)]\s+/;
 
+// Known tech skills vocabulary for layout-aware tech-line detection
+const TECH_TERMS = new Set([
+  'python', 'fastapi', 'flask', 'django', 'react', 'react.js', 'next.js', 'vue', 'vue.js',
+  'angular', 'node', 'node.js', 'express', 'express.js', 'webrtc', 'opencv', 'mongodb',
+  'sql', 'mysql', 'postgresql', 'postgres', 'sqlite', 'redis', 'docker', 'kubernetes',
+  'aws', 'gcp', 'azure', 'typescript', 'javascript', 'java', 'c', 'c++', 'c#', 'go', 'golang',
+  'rust', 'php', 'ruby', 'rails', 'tailwind', 'tailwind css', 'bootstrap', 'graphql',
+  'kafka', 'rabbitmq', 'scikit-learn', 'tensorflow', 'pytorch', 'langchain', 'openstreetmap',
+  'git', 'github', 'linux', 'html', 'html5', 'css', 'css3', 'webpack', 'vite', 'prisma',
+  'postman', 'figma', 'dsa', 'oop', 'dbms'
+]);
+
+/**
+ * Detect whether a line is a list of technologies rather than a project title
+ */
+const isTechnologyLine = (line) => {
+  if (!line || typeof line !== 'string') return false;
+  const raw = line.trim();
+
+  // URLs and web links are NEVER technology lists
+  if (/https?:\/\//i.test(raw) || raw.startsWith('www.')) return false;
+
+  // If line begins with a bullet, it is a bullet highlight, NEVER a technology list
+  if (BULLET_REGEX.test(raw)) return false;
+
+  const trimmed = raw.replace(BULLET_REGEX, '').trim();
+  if (METADATA_LABEL_REGEX.test(trimmed)) return true;
+
+  if (trimmed.includes(',') || trimmed.includes('/')) {
+    const tokens = trimmed.split(/[,/]/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+    // If any token has more than 4 words, this is a narrative sentence with commas, not a tech list
+    if (tokens.some((tok) => tok.split(/\s+/).length > 4)) {
+      return false;
+    }
+
+    if (tokens.length >= 2) {
+      let techMatches = 0;
+      for (const token of tokens) {
+        const clean = token.replace(/[()]/g, '').trim();
+        if (TECH_TERMS.has(clean)) {
+          techMatches++;
+        } else {
+          for (const term of TECH_TERMS) {
+            if (term.length > 3 && (clean === term || new RegExp(`\\b${term}\\b`, 'i').test(clean))) {
+              techMatches++;
+              break;
+            }
+          }
+        }
+      }
+      if (techMatches >= 2 || (techMatches >= 1 && tokens.length <= 4)) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 /**
  * Clean string for comparison and deduplication
  */
@@ -83,6 +141,11 @@ const isNewProjectTitle = (line, prevLine, currentProject) => {
 
   // Exclude lines that start with metadata labels (e.g. "Technologies: Go, Redis")
   if (METADATA_LABEL_REGEX.test(trimmed) || /^(?:key\s*responsibilities|projects|experience|education|skills)\b/i.test(trimmed)) {
+    return false;
+  }
+
+  // Exclude pure technology list lines (e.g. "Python, FastAPI, React.js, OpenStreetMap, Scikit-learn")
+  if (isTechnologyLine(trimmed)) {
     return false;
   }
 
@@ -207,6 +270,18 @@ const extractEvidenceBasedProjects = (projectLines = [], fullResumeText = '') =>
         continue;
       }
 
+      // 2.5 Check for Technology List Line (e.g. italic technologies line right below title)
+      if (isTechnologyLine(trimmed)) {
+        const target = trimmed.replace(METADATA_LABEL_REGEX, '').replace(BULLET_REGEX, '').trim();
+        const techList = target.split(/[,|/•·](?![^(]*\))/).map((t) => t.trim()).filter(Boolean);
+        for (const t of techList) {
+          if (!current.technologies.some((existing) => existing.toLowerCase() === t.toLowerCase())) {
+            current.technologies.push(t);
+          }
+        }
+        continue;
+      }
+
       // 3. Check for URLs
       const urlMatches = trimmed.match(URL_REGEX);
       if (urlMatches) {
@@ -325,6 +400,7 @@ const extractEvidenceBasedProjects = (projectLines = [], fullResumeText = '') =>
 module.exports = {
   extractEvidenceBasedProjects,
   isNewProjectTitle,
+  isTechnologyLine,
   titleSimilarity,
   normalizeTitle,
 };

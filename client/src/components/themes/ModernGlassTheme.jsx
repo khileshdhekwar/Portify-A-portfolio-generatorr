@@ -1,4 +1,5 @@
 import React from 'react';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 import {
   ExternalLink,
   Mail,
@@ -109,11 +110,16 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
             </div>
 
             {info.avatarUrl && (
-              <img
-                src={info.avatarUrl}
-                alt={info.fullName}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-white/[0.15] shadow-lg shrink-0"
-              />
+              <div className="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+                <div className="relative p-2 rounded-3xl bg-white/[0.04] border border-white/[0.12] backdrop-blur-xl shadow-glass">
+                  <img
+                    src={sanitizeUrl(info.avatarUrl)}
+                    alt={info.fullName || 'Digital Architect'}
+                    style={{ aspectRatio: '7/9' }}
+                    className="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl"
+                  />
+                </div>
+              </div>
             )}
           </div>
 
@@ -122,7 +128,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
             <div className="flex flex-wrap gap-2.5 mt-6 pt-6 border-t border-white/[0.06] text-xs">
               {info.website && (
                 <a
-                  href={info.website}
+                  href={sanitizeUrl(info.website)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-slate-200 transition-colors"
@@ -134,7 +140,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.github && (
                 <a
-                  href={info.github}
+                  href={sanitizeUrl(info.github)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-slate-200 transition-colors"
@@ -145,7 +151,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.linkedin && (
                 <a
-                  href={info.linkedin}
+                  href={sanitizeUrl(info.linkedin)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-slate-200 transition-colors"
@@ -156,7 +162,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.twitter && (
                 <a
-                  href={info.twitter}
+                  href={sanitizeUrl(info.twitter)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-slate-200 transition-colors"
@@ -255,7 +261,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
                         <div className="flex items-center gap-3 text-xs shrink-0">
                           {proj.liveUrl && (
                             <a
-                              href={proj.liveUrl}
+                              href={sanitizeUrl(proj.liveUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
@@ -266,7 +272,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
                           )}
                           {proj.repoUrl && (
                             <a
-                              href={proj.repoUrl}
+                              href={sanitizeUrl(proj.repoUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-slate-400 hover:text-white flex items-center gap-1"
@@ -399,7 +405,7 @@ export default function ModernGlassTheme({ portfolio, qrCodeUrl }) {
                       <span>{cert.name}</span>
                       {cert.credentialUrl && (
                         <a
-                          href={cert.credentialUrl}
+                          href={sanitizeUrl(cert.credentialUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-indigo-400 hover:text-indigo-300"

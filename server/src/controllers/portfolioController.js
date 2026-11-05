@@ -1,9 +1,9 @@
 const { Portfolio } = require('../models/Portfolio');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const portfolioService = require('../services/portfolioService');
 const { generatePortfolioZip } = require('../services/zipService');
 const { generateQRDataUrl } = require('../services/qrService');
-const { generateUniqueSlug } = require('../utils/slugify');
 const { generatePortfolioContent, generateContentDiff } = require('../services/portfolioGenerationService');
 const config = require('../config/env');
 
@@ -13,9 +13,7 @@ const config = require('../config/env');
  */
 const getPortfolios = async (req, res, next) => {
   try {
-    const portfolios = await Portfolio.find({ user: req.user._id })
-      .sort({ updatedAt: -1 })
-      .select('title slug theme isPublished extractionSource analytics createdAt updatedAt personalInfo.fullName personalInfo.headline');
+    const portfolios = await portfolioService.getUserPortfolios(req.user._id);
 
     res.json({
       success: true,
@@ -33,10 +31,7 @@ const getPortfolios = async (req, res, next) => {
  */
 const getPortfolioById = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const portfolio = await portfolioService.getPortfolioById(req.params.id, req.user._id);
 
     if (!portfolio) {
       return res.status(404).json({
@@ -60,10 +55,7 @@ const getPortfolioById = async (req, res, next) => {
  */
 const updatePortfolio = async (req, res, next) => {
   try {
-    let portfolio = await Portfolio.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const portfolio = await portfolioService.updatePortfolio(req.params.id, req.user._id, req.body);
 
     if (!portfolio) {
       return res.status(404).json({
@@ -71,40 +63,6 @@ const updatePortfolio = async (req, res, next) => {
         message: 'Portfolio not found or you do not have permission to edit it.',
       });
     }
-
-    const updates = req.body;
-
-    // If slug is being updated, verify uniqueness
-    if (updates.slug && updates.slug !== portfolio.slug) {
-      updates.slug = await generateUniqueSlug(updates.slug, portfolio._id);
-    }
-
-    // Apply allowed updates
-    const allowedFields = [
-      'title',
-      'slug',
-      'theme',
-      'isPublished',
-      'personalInfo',
-      'summary',
-      'experience',
-      'education',
-      'skills',
-      'softSkills',
-      'projects',
-      'certifications',
-      'achievements',
-      'customSections',
-      'themeSettings',
-    ];
-
-    allowedFields.forEach((field) => {
-      if (updates[field] !== undefined) {
-        portfolio[field] = updates[field];
-      }
-    });
-
-    await portfolio.save();
 
     res.json({
       success: true,
@@ -122,10 +80,7 @@ const updatePortfolio = async (req, res, next) => {
  */
 const deletePortfolio = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const portfolio = await portfolioService.deletePortfolio(req.params.id, req.user._id);
 
     if (!portfolio) {
       return res.status(404).json({
@@ -133,11 +88,6 @@ const deletePortfolio = async (req, res, next) => {
         message: 'Portfolio not found or already deleted.',
       });
     }
-
-    // Decrement user's count
-    await User.findByIdAndUpdate(req.user._id, {
-      $inc: { portfolioCount: -1 },
-    });
 
     res.json({
       success: true,
@@ -162,7 +112,7 @@ const getPublicPortfolio = async (req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       try {
-        const decoded = jwt.verify(token, config.jwtSecret);
+        const decoded = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
         const ownerMatch = await Portfolio.findOne({
           slug: slug.toLowerCase(),
           user: decoded.id,
@@ -482,11 +432,7 @@ const uploadPortfolioAvatar = async (req, res, next) => {
     const sanitizedBuffer = sanitizeImageBuffer(req.file.buffer, detectedMime);
     const dataUri = `data:${detectedMime};base64,${sanitizedBuffer.toString('base64')}`;
 
-    const portfolio = await Portfolio.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { $set: { 'personalInfo.avatarUrl': dataUri } },
-      { new: true, runValidators: true }
-    );
+    const portfolio = await portfolioService.updateAvatar(req.params.id, req.user._id, dataUri);
 
     if (!portfolio) {
       return res.status(404).json({
@@ -511,11 +457,7 @@ const uploadPortfolioAvatar = async (req, res, next) => {
  */
 const deletePortfolioAvatar = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { $set: { 'personalInfo.avatarUrl': '' } },
-      { new: true, runValidators: true }
-    );
+    const portfolio = await portfolioService.deleteAvatar(req.params.id, req.user._id);
 
     if (!portfolio) {
       return res.status(404).json({

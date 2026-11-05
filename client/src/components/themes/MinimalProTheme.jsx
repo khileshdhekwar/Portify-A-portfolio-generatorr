@@ -1,5 +1,6 @@
 import React from 'react';
 import { ExternalLink, Mail, MapPin, Phone, Globe, Github, Linkedin, Twitter, ArrowUpRight } from 'lucide-react';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 
 export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
   const p = portfolio || {};
@@ -97,11 +98,14 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
             </div>
 
             {info.avatarUrl && (
-              <img
-                src={info.avatarUrl}
-                alt={info.fullName}
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-slate-200 shadow-subtle shrink-0"
-              />
+              <div className="shrink-0 w-full md:w-auto flex justify-center md:justify-end">
+                <img
+                  src={sanitizeUrl(info.avatarUrl)}
+                  alt={info.fullName || 'Candidate Photo'}
+                  style={{ aspectRatio: '7/9' }}
+                  className="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl md:rounded-3xl border border-slate-200/90 shadow-lg ring-4 ring-slate-100/80 transition-transform duration-300 hover:scale-[1.02]"
+                />
+              </div>
             )}
           </div>
 
@@ -110,7 +114,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
             <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-slate-200/60 text-xs sm:text-sm">
               {info.website && (
                 <a
-                  href={info.website}
+                  href={sanitizeUrl(info.website)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-medium hover:text-indigo-600 transition-colors"
@@ -120,7 +124,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.github && (
                 <a
-                  href={info.github}
+                  href={sanitizeUrl(info.github)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-medium hover:text-indigo-600 transition-colors"
@@ -130,7 +134,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.linkedin && (
                 <a
-                  href={info.linkedin}
+                  href={sanitizeUrl(info.linkedin)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-medium hover:text-indigo-600 transition-colors"
@@ -140,7 +144,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.twitter && (
                 <a
-                  href={info.twitter}
+                  href={sanitizeUrl(info.twitter)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 font-medium hover:text-indigo-600 transition-colors"
@@ -247,7 +251,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
                         <div className="flex items-center gap-3 text-xs shrink-0">
                           {proj.liveUrl && (
                             <a
-                              href={proj.liveUrl}
+                              href={sanitizeUrl(proj.liveUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 font-medium text-slate-900 hover:text-indigo-600 hover:underline"
@@ -257,7 +261,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
                           )}
                           {proj.repoUrl && (
                             <a
-                              href={proj.repoUrl}
+                              href={sanitizeUrl(proj.repoUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-900 hover:underline"
@@ -394,7 +398,7 @@ export default function MinimalProTheme({ portfolio, qrCodeUrl }) {
                       <span>{cert.name}</span>
                       {cert.credentialUrl && (
                         <a
-                          href={cert.credentialUrl}
+                          href={sanitizeUrl(cert.credentialUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-indigo-600 hover:text-indigo-800"

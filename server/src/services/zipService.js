@@ -1,6 +1,7 @@
 const JSZip = require('jszip');
 const { generateQRBuffer } = require('./qrService');
 const config = require('../config/env');
+const { sanitizeUrl } = require('../utils/sanitizeUrl');
 
 /**
  * Generate complete standalone CSS matching the chosen theme
@@ -151,6 +152,20 @@ body {
 .rounded-3xl { border-radius: 1.5rem; }
 .rounded-full { border-radius: 9999px; }
 
+/* Aspect Ratios & Passport Image Utilities (7:9) */
+.aspect-\\[7\\/9\\] { aspect-ratio: 7 / 9; }
+.object-cover { object-fit: cover; }
+.object-center { object-position: center; }
+.w-36 { width: 9rem; }
+.w-40 { width: 10rem; }
+.w-44 { width: 11rem; }
+.w-48 { width: 12rem; }
+.w-52 { width: 13rem; }
+.w-56 { width: 14rem; }
+.w-60 { width: 15rem; }
+.w-64 { width: 16rem; }
+.w-72 { width: 18rem; }
+
 /* Interactive Elements */
 a {
   color: inherit;
@@ -293,6 +308,12 @@ body.theme-modern-glass .card {
 @media (min-width: 640px) {
   .sm\\:flex-row { flex-direction: row; }
   .sm\\:items-center { align-items: center; }
+  .sm\\:justify-end { justify-content: flex-end; }
+  .sm\\:w-auto { width: auto; }
+  .sm\\:w-44 { width: 11rem; }
+  .sm\\:w-48 { width: 12rem; }
+  .sm\\:w-52 { width: 13rem; }
+  .sm\\:w-56 { width: 14rem; }
   .sm\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sm\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -300,10 +321,21 @@ body.theme-modern-glass .card {
 @media (min-width: 768px) {
   .md\\:flex-row { flex-direction: row; }
   .md\\:items-center { align-items: center; }
+  .md\\:justify-end { justify-content: flex-end; }
+  .md\\:w-auto { width: auto; }
+  .md\\:w-52 { width: 13rem; }
+  .md\\:w-56 { width: 14rem; }
+  .md\\:w-60 { width: 15rem; }
+  .md\\:w-64 { width: 16rem; }
   .md\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .md\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .md\\:col-span-1 { grid-column: span 1 / span 1; }
   .md\\:col-span-2 { grid-column: span 2 / span 2; }
+}
+
+@media (min-width: 1024px) {
+  .lg\\:w-60 { width: 15rem; }
+  .lg\\:w-64 { width: 16rem; }
 }
 
 @media (max-width: 767px) {
@@ -385,6 +417,10 @@ function escapeHtml(text) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function safeHref(url) {
+  return escapeHtml(sanitizeUrl(url));
 }
 
 /**
@@ -481,16 +517,18 @@ function renderMinimalProBody(p, publicUrl, primaryColor) {
         </div>
 
         ${info.avatarUrl ? `
-          <img src="${escapeHtml(info.avatarUrl)}" alt="Avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border border-slate-200 shadow-sm shrink-0" />
+          <div class="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+            <img src="${safeHref(info.avatarUrl)}" alt="Avatar" class="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl border border-slate-200 shadow-lg" style="aspect-ratio: 7/9;" />
+          </div>
         ` : ''}
       </div>
 
       <!-- Social & Web Links -->
       <div class="flex flex-wrap gap-4 mt-6 pt-6 border-t border-slate-100 text-xs font-medium">
-        ${info.website ? `<a href="${escapeHtml(info.website)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Website ↗</a>` : ''}
-        ${info.github ? `<a href="${escapeHtml(info.github)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">GitHub ↗</a>` : ''}
-        ${info.linkedin ? `<a href="${escapeHtml(info.linkedin)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">LinkedIn ↗</a>` : ''}
-        ${info.twitter ? `<a href="${escapeHtml(info.twitter)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Twitter ↗</a>` : ''}
+        ${info.website ? `<a href="${safeHref(info.website)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Website ↗</a>` : ''}
+        ${info.github ? `<a href="${safeHref(info.github)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">GitHub ↗</a>` : ''}
+        ${info.linkedin ? `<a href="${safeHref(info.linkedin)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">LinkedIn ↗</a>` : ''}
+        ${info.twitter ? `<a href="${safeHref(info.twitter)}" target="_blank" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Twitter ↗</a>` : ''}
       </div>
     </header>
 
@@ -536,8 +574,8 @@ function renderMinimalProBody(p, publicUrl, primaryColor) {
             <div class="flex items-center justify-between mb-2">
               <h3 class="font-bold text-slate-900 text-sm">${escapeHtml(proj.title)}</h3>
               <div class="flex gap-2 text-xs">
-                ${proj.liveUrl ? `<a href="${escapeHtml(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Demo ↗</a>` : ''}
-                ${proj.repoUrl ? `<a href="${escapeHtml(proj.repoUrl)}" target="_blank" class="text-slate-500 hover:underline">Code ↗</a>` : ''}
+                ${proj.liveUrl ? `<a href="${safeHref(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Demo ↗</a>` : ''}
+                ${proj.repoUrl ? `<a href="${safeHref(proj.repoUrl)}" target="_blank" class="text-slate-500 hover:underline">Code ↗</a>` : ''}
               </div>
             </div>
             <p class="text-xs text-slate-600 mb-3">${escapeHtml(proj.description)}</p>
@@ -609,7 +647,7 @@ function renderMinimalProBody(p, publicUrl, primaryColor) {
             </div>
             <div class="flex items-center gap-2 mt-1 sm:mt-0 text-xs font-mono text-slate-500">
               <span>${escapeHtml(cert.issueDate || '')}</span>
-              ${cert.credentialUrl ? `<a href="${escapeHtml(cert.credentialUrl)}" target="_blank" class="text-indigo-600 hover:underline">Verify ↗</a>` : ''}
+              ${cert.credentialUrl ? `<a href="${safeHref(cert.credentialUrl)}" target="_blank" class="text-indigo-600 hover:underline">Verify ↗</a>` : ''}
             </div>
           </div>
         `).join('')}
@@ -666,10 +704,15 @@ function renderDarkDeveloperBody(p, publicUrl, primaryColor) {
             ${info.email ? `<a href="mailto:${escapeHtml(info.email)}" class="hover:text-emerald-400 underline">✉️ ${escapeHtml(info.email)}</a>` : ''}
           </div>
         </div>
+        ${info.avatarUrl ? `
+          <div class="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+            <img src="${safeHref(info.avatarUrl)}" alt="Avatar" class="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl border-2 border-slate-700 shadow-2xl bg-slate-950" style="aspect-ratio: 7/9;" />
+          </div>
+        ` : ''}
         <div class="flex flex-wrap gap-2 font-mono text-xs">
-          ${info.github ? `<a href="${escapeHtml(info.github)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">github() ↗</a>` : ''}
-          ${info.linkedin ? `<a href="${escapeHtml(info.linkedin)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">linkedin() ↗</a>` : ''}
-          ${info.website ? `<a href="${escapeHtml(info.website)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">site() ↗</a>` : ''}
+          ${info.github ? `<a href="${safeHref(info.github)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">github() ↗</a>` : ''}
+          ${info.linkedin ? `<a href="${safeHref(info.linkedin)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">linkedin() ↗</a>` : ''}
+          ${info.website ? `<a href="${safeHref(info.website)}" target="_blank" class="px-3 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700">site() ↗</a>` : ''}
         </div>
       </div>
     </header>
@@ -718,8 +761,8 @@ function renderDarkDeveloperBody(p, publicUrl, primaryColor) {
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-mono font-bold text-white text-sm">${escapeHtml(proj.title)}</h4>
               <div class="flex gap-2 text-xs font-mono">
-                ${proj.liveUrl ? `<a href="${escapeHtml(proj.liveUrl)}" target="_blank" class="text-emerald-400 hover:underline">live()</a>` : ''}
-                ${proj.repoUrl ? `<a href="${escapeHtml(proj.repoUrl)}" target="_blank" class="text-slate-400 hover:underline">src()</a>` : ''}
+                ${proj.liveUrl ? `<a href="${safeHref(proj.liveUrl)}" target="_blank" class="text-emerald-400 hover:underline">live()</a>` : ''}
+                ${proj.repoUrl ? `<a href="${safeHref(proj.repoUrl)}" target="_blank" class="text-slate-400 hover:underline">src()</a>` : ''}
               </div>
             </div>
             <p class="text-xs text-slate-400 mb-3">${escapeHtml(proj.description)}</p>
@@ -789,7 +832,7 @@ function renderDarkDeveloperBody(p, publicUrl, primaryColor) {
               <span class="text-white font-semibold">${escapeHtml(cert.name)}</span>
               <span class="text-slate-500 ml-2">(${escapeHtml(cert.issuer || '')})</span>
             </div>
-            ${cert.credentialUrl ? `<a href="${escapeHtml(cert.credentialUrl)}" target="_blank" class="text-emerald-400 hover:underline">verify()</a>` : ''}
+            ${cert.credentialUrl ? `<a href="${safeHref(cert.credentialUrl)}" target="_blank" class="text-emerald-400 hover:underline">verify()</a>` : ''}
           </div>
         `).join('')}
       </div>
@@ -830,14 +873,23 @@ function renderCreativeGradientBody(p, publicUrl, primaryColor) {
   <main class="max-w-4xl mx-auto px-6 py-16 text-slate-900 min-h-screen font-sans bg-slate-50">
     <!-- Gradient Hero Header -->
     <header class="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-indigo-50/90 via-purple-50/70 to-rose-50/60 border border-indigo-100 shadow-sm mb-12">
-      <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-100 text-indigo-700 rounded-full mb-3">Creative Showcase</span>
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900">${escapeHtml(info.fullName || 'Creative Portfolio')}</h1>
-      <p class="text-xl text-indigo-950 font-medium mt-2">${escapeHtml(info.headline || 'Product & Technology Specialist')}</p>
-      ${p.summary ? `<p class="mt-4 text-slate-600 max-w-2xl text-sm leading-relaxed">${escapeHtml(p.summary)}</p>` : ''}
-      <div class="flex flex-wrap gap-3 mt-6">
-        ${info.website ? `<a href="${escapeHtml(info.website)}" target="_blank" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">Visit Website ↗</a>` : ''}
-        ${info.github ? `<a href="${escapeHtml(info.github)}" target="_blank" class="px-4 py-2 bg-white text-slate-800 border border-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-50">GitHub</a>` : ''}
-        ${info.linkedin ? `<a href="${escapeHtml(info.linkedin)}" target="_blank" class="px-4 py-2 bg-white text-slate-800 border border-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-50">LinkedIn</a>` : ''}
+      <div class="flex flex-col-reverse md:flex-row justify-between items-start gap-6">
+        <div class="flex-1">
+          <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-indigo-100 text-indigo-700 rounded-full mb-3">Creative Showcase</span>
+          <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900">${escapeHtml(info.fullName || 'Creative Portfolio')}</h1>
+          <p class="text-xl text-indigo-950 font-medium mt-2">${escapeHtml(info.headline || 'Product & Technology Specialist')}</p>
+          ${p.summary ? `<p class="mt-4 text-slate-600 max-w-2xl text-sm leading-relaxed">${escapeHtml(p.summary)}</p>` : ''}
+          <div class="flex flex-wrap gap-3 mt-6">
+            ${info.website ? `<a href="${safeHref(info.website)}" target="_blank" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800">Visit Website ↗</a>` : ''}
+            ${info.github ? `<a href="${safeHref(info.github)}" target="_blank" class="px-4 py-2 bg-white text-slate-800 border border-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-50">GitHub</a>` : ''}
+            ${info.linkedin ? `<a href="${safeHref(info.linkedin)}" target="_blank" class="px-4 py-2 bg-white text-slate-800 border border-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-50">LinkedIn</a>` : ''}
+          </div>
+        </div>
+        ${info.avatarUrl ? `
+          <div class="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+            <img src="${safeHref(info.avatarUrl)}" alt="Avatar" class="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-3xl border-4 border-white shadow-xl" style="aspect-ratio: 7/9;" />
+          </div>
+        ` : ''}
       </div>
     </header>
 
@@ -856,8 +908,8 @@ function renderCreativeGradientBody(p, publicUrl, primaryColor) {
               </div>
             ` : ''}
             <div class="flex gap-3 text-xs font-semibold">
-              ${proj.liveUrl ? `<a href="${escapeHtml(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Live Preview ↗</a>` : ''}
-              ${proj.repoUrl ? `<a href="${escapeHtml(proj.repoUrl)}" target="_blank" class="text-slate-500 hover:underline">Source</a>` : ''}
+              ${proj.liveUrl ? `<a href="${safeHref(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Live Preview ↗</a>` : ''}
+              ${proj.repoUrl ? `<a href="${safeHref(proj.repoUrl)}" target="_blank" class="text-slate-500 hover:underline">Source</a>` : ''}
             </div>
           </div>
         `).join('')}
@@ -958,18 +1010,23 @@ function renderCorporateEliteBody(p, publicUrl, primaryColor) {
   <main class="max-w-5xl mx-auto px-6 py-16 text-slate-900 bg-white min-h-screen font-sans">
     <!-- Executive Header with Navy Accent -->
     <header class="border-b-2 border-slate-900 pb-8 mb-10">
-      <div class="flex justify-between items-start">
+      <div class="flex flex-col-reverse sm:flex-row justify-between items-start gap-6">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-900 mb-1 block">Executive Dossier</span>
           <h1 class="text-3xl sm:text-4xl font-bold uppercase tracking-wide text-slate-900">${escapeHtml(info.fullName || 'Executive Profile')}</h1>
           <p class="text-sm text-slate-700 font-semibold tracking-wide uppercase mt-1">${escapeHtml(info.headline || 'Leadership & Operations')}</p>
         </div>
+        ${info.avatarUrl ? `
+          <div class="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+            <img src="${safeHref(info.avatarUrl)}" alt="Avatar" class="w-40 sm:w-48 md:w-56 lg:w-60 aspect-[7/9] object-cover object-center rounded-xl border-2 border-slate-700 shadow-md" style="aspect-ratio: 7/9;" />
+          </div>
+        ` : ''}
       </div>
       <div class="flex flex-wrap gap-x-6 gap-y-1 mt-4 text-xs text-slate-600 font-medium">
         ${info.location ? `<span>📍 ${escapeHtml(info.location)}</span>` : ''}
         ${info.email ? `<span>✉️ ${escapeHtml(info.email)}</span>` : ''}
         ${info.phone ? `<span>📞 ${escapeHtml(info.phone)}</span>` : ''}
-        ${info.linkedin ? `<a href="${escapeHtml(info.linkedin)}" target="_blank" class="hover:underline">LinkedIn Profile ↗</a>` : ''}
+        ${info.linkedin ? `<a href="${safeHref(info.linkedin)}" target="_blank" class="hover:underline">LinkedIn Profile ↗</a>` : ''}
       </div>
     </header>
 
@@ -1069,7 +1126,7 @@ function renderCorporateEliteBody(p, publicUrl, primaryColor) {
                 <div class="flex justify-between items-baseline mb-1">
                   <h4 class="text-sm font-bold text-slate-900">${escapeHtml(proj.title)}</h4>
                   <div class="flex gap-2 text-xs">
-                    ${proj.liveUrl ? `<a href="${escapeHtml(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Deliverable ↗</a>` : ''}
+                    ${proj.liveUrl ? `<a href="${safeHref(proj.liveUrl)}" target="_blank" class="text-indigo-600 hover:underline">Deliverable ↗</a>` : ''}
                   </div>
                 </div>
                 <p class="text-xs text-slate-600 mb-2">${escapeHtml(proj.description)}</p>
@@ -1132,17 +1189,26 @@ function renderModernGlassBody(p, publicUrl, primaryColor) {
     <main class="max-w-4xl mx-auto relative z-10 space-y-10">
       <!-- Glass Hero Header -->
       <header class="p-8 sm:p-12 rounded-3xl bg-white/[0.04] border border-white/[0.1] backdrop-blur-xl shadow-2xl">
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] text-xs font-mono text-indigo-300 mb-3">
-          <span>✦ modern-glass</span>
+        <div class="flex flex-col-reverse md:flex-row justify-between items-start gap-6">
+          <div class="flex-1">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] text-xs font-mono text-indigo-300 mb-3">
+              <span>✦ modern-glass</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-white">${escapeHtml(info.fullName || 'Digital Profile')}</h1>
+            <p class="text-xl text-indigo-300 font-medium mt-2">${escapeHtml(info.headline || 'Digital Creator & Architect')}</p>
+            <div class="flex flex-wrap gap-4 mt-4 text-xs text-slate-400">
+              ${info.location ? `<span>📍 ${escapeHtml(info.location)}</span>` : ''}
+              ${info.email ? `<a href="mailto:${escapeHtml(info.email)}" class="hover:text-white transition-colors">✉️ ${escapeHtml(info.email)}</a>` : ''}
+              ${info.phone ? `<span>📞 ${escapeHtml(info.phone)}</span>` : ''}
+            </div>
+            ${p.summary ? `<p class="mt-4 text-slate-300 text-sm leading-relaxed max-w-2xl font-light">${escapeHtml(p.summary)}</p>` : ''}
+          </div>
+          ${info.avatarUrl ? `
+            <div class="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+              <img src="${safeHref(info.avatarUrl)}" alt="Avatar" class="w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl border border-white/[0.15] shadow-xl" style="aspect-ratio: 7/9;" />
+            </div>
+          ` : ''}
         </div>
-        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-white">${escapeHtml(info.fullName || 'Digital Profile')}</h1>
-        <p class="text-xl text-indigo-300 font-medium mt-2">${escapeHtml(info.headline || 'Digital Creator & Architect')}</p>
-        <div class="flex flex-wrap gap-4 mt-4 text-xs text-slate-400">
-          ${info.location ? `<span>📍 ${escapeHtml(info.location)}</span>` : ''}
-          ${info.email ? `<a href="mailto:${escapeHtml(info.email)}" class="hover:text-white transition-colors">✉️ ${escapeHtml(info.email)}</a>` : ''}
-          ${info.phone ? `<span>📞 ${escapeHtml(info.phone)}</span>` : ''}
-        </div>
-        ${p.summary ? `<p class="mt-4 text-slate-300 text-sm leading-relaxed max-w-2xl font-light">${escapeHtml(p.summary)}</p>` : ''}
       </header>
 
       <!-- 3. Glass Experience -->
@@ -1178,8 +1244,8 @@ function renderModernGlassBody(p, publicUrl, primaryColor) {
               <div class="flex justify-between items-start mb-1">
                 <h4 class="font-bold text-white text-sm">${escapeHtml(proj.title)}</h4>
                 <div class="flex gap-2 text-xs">
-                  ${proj.liveUrl ? `<a href="${escapeHtml(proj.liveUrl)}" target="_blank" class="text-indigo-400 hover:underline">live ↗</a>` : ''}
-                  ${proj.repoUrl ? `<a href="${escapeHtml(proj.repoUrl)}" target="_blank" class="text-slate-400 hover:underline">code ↗</a>` : ''}
+                  ${proj.liveUrl ? `<a href="${safeHref(proj.liveUrl)}" target="_blank" class="text-indigo-400 hover:underline">live ↗</a>` : ''}
+                  ${proj.repoUrl ? `<a href="${safeHref(proj.repoUrl)}" target="_blank" class="text-slate-400 hover:underline">code ↗</a>` : ''}
                 </div>
               </div>
               <p class="text-xs text-slate-300 mb-3">${escapeHtml(proj.description)}</p>

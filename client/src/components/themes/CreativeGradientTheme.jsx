@@ -1,4 +1,5 @@
 import React from 'react';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 import {
   ExternalLink,
   Mail,
@@ -107,13 +108,16 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
             </div>
 
             {info.avatarUrl && (
-              <div className="relative shrink-0">
-                <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 opacity-30 blur-sm" />
-                <img
-                  src={info.avatarUrl}
-                  alt={info.fullName}
-                  className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-white shadow-card"
-                />
+              <div className="shrink-0 w-full md:w-auto flex justify-center md:justify-end">
+                <div className="relative group">
+                  <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-40 blur-lg group-hover:opacity-70 transition-opacity" />
+                  <img
+                    src={sanitizeUrl(info.avatarUrl)}
+                    alt={info.fullName || 'Creative Profile'}
+                    style={{ aspectRatio: '7/9' }}
+                    className="relative w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-3xl border-4 border-white shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -123,7 +127,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
             <div className="flex flex-wrap gap-2.5 mt-8 pt-6 border-t border-purple-100/80 text-xs">
               {info.website && (
                 <a
-                  href={info.website}
+                  href={sanitizeUrl(info.website)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors shadow-subtle"
@@ -133,7 +137,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.github && (
                 <a
-                  href={info.github}
+                  href={sanitizeUrl(info.github)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200/80 rounded-xl font-medium transition-colors shadow-subtle"
@@ -143,7 +147,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.linkedin && (
                 <a
-                  href={info.linkedin}
+                  href={sanitizeUrl(info.linkedin)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200/80 rounded-xl font-medium transition-colors shadow-subtle"
@@ -153,7 +157,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
               )}
               {info.twitter && (
                 <a
-                  href={info.twitter}
+                  href={sanitizeUrl(info.twitter)}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200/80 rounded-xl font-medium transition-colors shadow-subtle"
@@ -237,7 +241,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
                       <div className="flex items-center gap-4 text-xs font-semibold pt-3 border-t border-slate-100">
                         {proj.liveUrl && (
                           <a
-                            href={proj.liveUrl}
+                            href={sanitizeUrl(proj.liveUrl)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
@@ -247,7 +251,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
                         )}
                         {proj.repoUrl && (
                           <a
-                            href={proj.repoUrl}
+                            href={sanitizeUrl(proj.repoUrl)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-800"
@@ -383,7 +387,7 @@ export default function CreativeGradientTheme({ portfolio, qrCodeUrl }) {
                   </div>
                   {cert.credentialUrl && (
                     <a
-                      href={cert.credentialUrl}
+                      href={sanitizeUrl(cert.credentialUrl)}
                       target="_blank"
                       rel="noreferrer"
                       className="text-indigo-600 hover:text-indigo-800 p-1"

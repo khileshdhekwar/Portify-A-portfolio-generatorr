@@ -263,4 +263,39 @@ describe('Portify AI — 5 Portfolio Themes Unit & Visual Hierarchy Suite', () =
       expect(screen.getByText('modern-glass')).toBeDefined();
     });
   });
+
+  describe('Passport 7:9 Aspect Ratio and Responsive Image Sizing', () => {
+    const themeComponents = [
+      { name: 'MinimalProTheme', Component: MinimalProTheme },
+      { name: 'DarkDeveloperTheme', Component: DarkDeveloperTheme },
+      { name: 'CreativeGradientTheme', Component: CreativeGradientTheme },
+      { name: 'CorporateEliteTheme', Component: CorporateEliteTheme },
+      { name: 'ModernGlassTheme', Component: ModernGlassTheme },
+    ];
+
+    themeComponents.forEach(({ name, Component }) => {
+      it(`${name} should render avatar image with 7:9 passport aspect ratio and responsive classes`, () => {
+        const { container } = render(<Component portfolio={fullPortfolioSample} />);
+        const img = container.querySelector('header img');
+        expect(img).not.toBeNull();
+        expect(img.className).toContain('aspect-[7/9]');
+        expect(img.className).toContain('object-cover');
+        expect(img.className).toContain('object-center');
+        expect(img.style.aspectRatio).toMatch(/7\s*\/\s*9/);
+      });
+
+      it(`${name} should adapt smoothly without image when avatarUrl is omitted`, () => {
+        const portfolioWithoutAvatar = {
+          ...fullPortfolioSample,
+          personalInfo: {
+            ...fullPortfolioSample.personalInfo,
+            avatarUrl: null,
+          },
+        };
+        const { container } = render(<Component portfolio={portfolioWithoutAvatar} />);
+        const img = container.querySelector('header img');
+        expect(img).toBeNull();
+      });
+    });
+  });
 });

@@ -378,6 +378,30 @@ describe('Portify AI — Complete Portfolio Export Systems (Live Portfolio & ZIP
       }
     });
 
+    it('should format avatar images to 7:9 passport aspect ratio across all 5 offline themes and CSS', () => {
+      const themes = ['minimal-pro', 'dark-developer', 'creative-gradient', 'corporate-elite', 'modern-glass'];
+      const sample = {
+        ...testPortfolio.toObject(),
+        personalInfo: {
+          ...testPortfolio.personalInfo,
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+        },
+      };
+
+      for (const t of themes) {
+        sample.theme = t;
+        const html = renderStandaloneHTML(sample, `https://portify.dev/p/${sample.slug}`);
+        expect(html).toContain('aspect-[7/9]');
+        expect(html).toContain('style="aspect-ratio: 7/9;"');
+        expect(html).toContain('object-cover object-center');
+      }
+
+      const css = generateStandaloneCSS('minimal-pro');
+      expect(css).toContain('aspect-ratio: 7 / 9');
+      expect(css).toContain('object-fit: cover');
+      expect(css).toContain('object-position: center');
+    });
+
     it('GET /api/portfolios/:id/zip should allow owner to download ZIP archive', async () => {
       const res = await request(app)
         .get(`/api/portfolios/${testPortfolio._id}/zip`)

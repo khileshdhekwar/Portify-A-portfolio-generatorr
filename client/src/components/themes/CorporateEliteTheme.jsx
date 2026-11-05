@@ -1,4 +1,5 @@
 import React from 'react';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 import {
   Mail,
   MapPin,
@@ -48,11 +49,14 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
             </div>
 
             {info.avatarUrl && (
-              <img
-                src={info.avatarUrl}
-                alt={info.fullName}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-2 border-slate-700 shadow-md shrink-0"
-              />
+              <div className="shrink-0 w-full sm:w-auto flex justify-center sm:justify-end">
+                <img
+                  src={sanitizeUrl(info.avatarUrl)}
+                  alt={info.fullName || 'Executive Photo'}
+                  style={{ aspectRatio: '7/9' }}
+                  className="w-40 sm:w-48 md:w-56 lg:w-60 aspect-[7/9] object-cover object-center rounded-xl border-2 border-slate-600 shadow-xl"
+                />
+              </div>
             )}
           </div>
 
@@ -81,7 +85,7 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
             )}
             {info.linkedin && (
               <a
-                href={info.linkedin}
+                href={sanitizeUrl(info.linkedin)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
@@ -92,7 +96,7 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
             )}
             {info.website && (
               <a
-                href={info.website}
+                href={sanitizeUrl(info.website)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
@@ -184,7 +188,7 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
                         <span>{cert.name}</span>
                         {cert.credentialUrl && (
                           <a
-                            href={cert.credentialUrl}
+                            href={sanitizeUrl(cert.credentialUrl)}
                             target="_blank"
                             rel="noreferrer"
                             className="text-indigo-600 hover:text-indigo-800"
@@ -315,7 +319,7 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
                           <div className="flex items-center gap-2 text-xs shrink-0">
                             {proj.liveUrl && (
                               <a
-                                href={proj.liveUrl}
+                                href={sanitizeUrl(proj.liveUrl)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="font-medium text-indigo-700 hover:underline flex items-center gap-1"
@@ -326,7 +330,7 @@ export default function CorporateEliteTheme({ portfolio, qrCodeUrl }) {
                             )}
                             {proj.repoUrl && (
                               <a
-                                href={proj.repoUrl}
+                                href={sanitizeUrl(proj.repoUrl)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1"

@@ -1,4 +1,5 @@
 import React from 'react';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 import {
   Terminal,
   GitBranch,
@@ -127,11 +128,17 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
             </div>
 
             {info.avatarUrl && (
-              <img
-                src={info.avatarUrl}
-                alt={info.fullName}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-slate-700 shadow-lg shrink-0"
-              />
+              <div className="shrink-0 w-full md:w-auto flex justify-center md:justify-end">
+                <div className="relative group">
+                  <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500/30 to-indigo-500/30 blur-md group-hover:opacity-100 transition-opacity" />
+                  <img
+                    src={sanitizeUrl(info.avatarUrl)}
+                    alt={info.fullName || 'Developer Profile'}
+                    style={{ aspectRatio: '7/9' }}
+                    className="relative w-40 sm:w-48 md:w-56 lg:w-64 aspect-[7/9] object-cover object-center rounded-2xl border-2 border-slate-700/80 shadow-2xl bg-slate-950"
+                  />
+                </div>
+              </div>
             )}
           </div>
 
@@ -139,7 +146,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
           <div className="flex flex-wrap gap-2 pt-6 mt-6 border-t border-slate-800/80 text-xs">
             {info.github && (
               <a
-                href={info.github}
+                href={sanitizeUrl(info.github)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition-colors"
@@ -151,7 +158,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
             )}
             {info.linkedin && (
               <a
-                href={info.linkedin}
+                href={sanitizeUrl(info.linkedin)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition-colors"
@@ -163,7 +170,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
             )}
             {info.website && (
               <a
-                href={info.website}
+                href={sanitizeUrl(info.website)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition-colors"
@@ -175,7 +182,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
             )}
             {info.twitter && (
               <a
-                href={info.twitter}
+                href={sanitizeUrl(info.twitter)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition-colors"
@@ -297,7 +304,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
                         <div className="flex gap-2.5 text-xs shrink-0 font-mono">
                           {proj.liveUrl && (
                             <a
-                              href={proj.liveUrl}
+                              href={sanitizeUrl(proj.liveUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-emerald-400 hover:text-emerald-300 hover:underline px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-800/40"
@@ -307,7 +314,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
                           )}
                           {proj.repoUrl && (
                             <a
-                              href={proj.repoUrl}
+                              href={sanitizeUrl(proj.repoUrl)}
                               target="_blank"
                               rel="noreferrer"
                               className="text-slate-300 hover:text-white hover:underline px-2 py-0.5 rounded bg-slate-800/60 border border-slate-700/50"
@@ -445,7 +452,7 @@ export default function DarkDeveloperTheme({ portfolio, qrCodeUrl }) {
                       {cert.name}
                       {cert.credentialUrl && (
                         <a
-                          href={cert.credentialUrl}
+                          href={sanitizeUrl(cert.credentialUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-emerald-400 hover:text-emerald-300"

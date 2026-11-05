@@ -13,6 +13,9 @@ const aiRoutes = require('./routes/aiRoutes');
 
 const app = express();
 
+// Enable trust proxy for secure reverse-proxy IP identification
+app.set('trust proxy', 1);
+
 // Security Headers
 app.use(
   helmet({
@@ -33,6 +36,29 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// NoSQL Injection Mitigation (ASVS V5): recursively strip keys containing leading $ or dots
+const sanitizeNoSql = (req, res, next) => {
+  const sanitize = (obj) => {
+    if (obj && typeof obj === 'object') {
+      for (const key of Object.keys(obj)) {
+        if (key.startsWith('$') || key.includes('.')) {
+          delete obj[key];
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          sanitize(obj[key]);
+          if (Object.keys(obj[key]).length === 0) {
+            delete obj[key];
+          }
+        }
+      }
+    }
+  };
+  sanitize(req.body);
+  sanitize(req.query);
+  sanitize(req.params);
+  next();
+};
+app.use(sanitizeNoSql);
+
 // Rate Limiter for API stability (relaxed in development/test, strict in production)
 const isDevOrTest = config.nodeEnv === 'development' || config.nodeEnv === 'test' || process.env.NODE_ENV === 'test';
 const apiLimiter = rateLimit({
@@ -46,6 +72,20 @@ const apiLimiter = rateLimit({
   },
 });
 app.use('/api/', apiLimiter);
+
+// Dedicated strict rate limiter for authentication routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDevOrTest ? 20000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many authentication attempts. Please try again after 15 minutes.',
+  },
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

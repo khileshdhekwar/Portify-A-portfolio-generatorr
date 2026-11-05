@@ -1,0 +1,47 @@
+ROHIT SHARMA
+rohit.sharma@example.com | +91 98765 43210 | Pune, India
+https://linkedin.com/in/rohit-sharma | https://github.com/rohitsharma
+
+SUMMARY
+Enthusiastic and detail-oriented Information Technology undergraduate with a strong foundation in full-stack web development, software engineering principles, and artificial intelligence solutions. Passionate about architecting scalable web applications and solving real-world challenges through clean, maintainable code.
+
+SKILLS
+Programming Languages: Java, Python, JavaScript, C
+Web Technologies: HTML5, CSS3, React.js, Node.js, Express.js
+Databases: MongoDB, SQL (MySQL)
+Tools & Platforms: Git, GitHub, VS Code, Postman
+Core Concepts: Data Structures & Algorithms, OOP, DBMS, Operating Systems, Computer Networks
+
+PROJECTS
+AI-Powered Smart Travel Planner and Budget Optimizer
+Python, FastAPI, React.js, OpenStreetMap, Scikit-learn
+• Architected an AI-powered travel itinerary planner generating customized multi-city routes and daily travel plans with budget optimization.
+• Integrated OpenStreetMap APIs for dynamic waypoint routing and real-time transit cost calculation.
+• Implemented cost-estimation algorithms that reduced unexpected trip expenses by up to 30%.
+
+Online Examination and AI Proctoring System
+Node.js, Express.js, WebRTC, OpenCV, MongoDB
+• Developed automated browser lockdown and multi-face detection algorithms using OpenCV and WebRTC camera feeds.
+• Scaled backend architecture to process simultaneous exam submissions and telemetry logs for 5,000+ candidates.
+• Reduced cheating flags by 85% through real-time eye-tracking and audio anomaly monitoring.
+
+AI Career Copilot
+Next.js, LangChain, Tailwind CSS, PostgreSQL
+• Built an ATS-compliant resume analyzer scoring keyword relevance against target job descriptions using LangChain.
+• Implemented interactive portfolio previewer with instant theme switching, live editing, and responsive layout.
+• Automated cover letter and cold outreach generation, improving interview callback rates by 40%.
+
+CERTIFICATIONS
+• Soft Skills Development Workshop | IIT Bombay | 2024
+• Oracle Cloud Infrastructure 2025 Certified Foundations Associate | Oracle | 2025
+
+EDUCATION
+B.Tech in Information Technology | Pune Institute of Computer Technology | 2021 - 2025
+CGPA: 8.9 / 10.0
+
+Higher Secondary Certificate (HSC) | Modern College of Arts, Science and Commerce | 2021
+Percentage: 91.4%
+
+Secondary School Certificate (SSC) | St. Vincent High School | 2019
+Percentage: 94.2%
+
